@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div>
+	<h1>{{cargo_pkg_name}}</h1>
+	<p> {{cargo_pkg_name }} v{{ cargo_pkg_version }} is running at this server</p>
+</div>
+
+</body>
+</html> 
