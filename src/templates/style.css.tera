@@ -1,0 +1,15 @@
+* {
+	box-sizing: border-box;
+}
+body {
+	background-color: {{ style.background_color }};
+	color: {{ style.font_color }};
+	margin: 0;
+}
+.center {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
