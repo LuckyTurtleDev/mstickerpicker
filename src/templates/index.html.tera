@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html>
+<head>
+	<title>{{ cargo_pkg_name }}</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+	<style>
+		{% include "style" %}
+	</style>
+</head>
+
 <body>
-
-<div>
-	<h1>{{cargo_pkg_name}}</h1>
-	<p> {{cargo_pkg_name }} v{{ cargo_pkg_version }} is running at this server</p>
-</div>
-
+	<div class="center">
+		<h1>{{cargo_pkg_name}}</h1>
+		<p> {{cargo_pkg_name }} v{{ cargo_pkg_version }} is running at this server</p>
+	</div>
 </body>
 </html> 

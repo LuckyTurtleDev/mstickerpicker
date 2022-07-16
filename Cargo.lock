@@ -662,6 +662,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "html_color"
+version = "0.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8777025fb1b6f012d0ae9aeba4639cc463cc509a74bf36b80bfe70e9a5bba23e"
+
+[[package]]
 name = "http"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -952,8 +958,10 @@ dependencies = [
 name = "mstickerpicker"
 version = "0.1.0"
 dependencies = [
+ "html_color",
  "rocket",
  "rocket_dyn_templates",
+ "serde",
 ]
 
 [[package]]
