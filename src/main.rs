@@ -7,6 +7,7 @@ use rocket::http::Status;
 use rocket_dyn_templates::{context, Template};
 mod style;
 use anyhow::Result;
+use colored::*;
 use once_cell::sync::Lazy;
 use s3::{Bucket, Region};
 use std::env;
@@ -35,7 +36,10 @@ impl<T> ToResultStatus<T> for anyhow::Result<T> {
 	fn to_res_stat(self) -> Result<T, Status> {
 		match self {
 			Ok(value) => Ok(value),
-			Err(_) => Err(Status::InternalServerError),
+			Err(err) => {
+				eprintln!("   {} {}", ">>".bold(), format!("{} {}", "Error:".bold(), err).red());
+				Err(Status::InternalServerError)
+			},
 		}
 	}
 }
