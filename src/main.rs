@@ -8,6 +8,8 @@ use rocket_dyn_templates::{context, Template};
 mod style;
 use anyhow::Result;
 use colored::*;
+use dotenv::dotenv;
+use futures_executor;
 use once_cell::sync::Lazy;
 use s3::{Bucket, Region};
 use std::env;
@@ -68,6 +70,7 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 
 #[launch]
 fn rocket() -> _ {
-	_ = BUCKET.list("/".to_owned(), Some("/".to_owned())); //init lazy
+	dotenv().ok();
+	futures_executor::block_on(BUCKET.list("/".to_owned(), Some("/".to_owned()))).expect("failed to connect to s3 bucket");
 	rocket::build().mount("/", routes![index]).attach(Template::fairing())
 }
