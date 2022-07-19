@@ -16,6 +16,7 @@ use rocket::{config::LogLevel, tokio::task::spawn_blocking};
 use s3::{Bucket, Region};
 use std::env;
 use style::{Style, Theme};
+use std::collections::BTreeMap;
 
 const CARGO_PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -95,15 +96,14 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 				},
 			}
 		}
-		for pack in packs {
-			println!("{pack:?}");
-		}
 		Ok(Template::render(
 			"picker",
-			context! {cargo_pkg_version: CARGO_PKG_VERSION, cargo_pkg_name: CARGO_PKG_NAME, style},
+			context! {cargo_pkg_name: CARGO_PKG_NAME, packs, style},
 		))
 	}
 }
+
+
 #[launch]
 async fn rocket() -> _ {
 	spawn_blocking(|| dotenv()).await.ok();

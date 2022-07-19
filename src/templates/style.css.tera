@@ -13,3 +13,7 @@ body {
 	align-items: center;
 	justify-content: center;
 }
+.pack_title {
+	font-size: min(9vw, 2rem);
+	margin-left: 1ch
+}
