@@ -1202,6 +1202,7 @@ dependencies = [
  "dotenv",
  "futures-executor",
  "html_color",
+ "log",
  "once_cell",
  "rocket",
  "rocket_dyn_templates",

@@ -9,14 +9,20 @@ mod style;
 use anyhow::Result;
 use colored::*;
 use dotenv::dotenv;
-use futures_executor;
 use once_cell::sync::Lazy;
+use rocket::{config::LogLevel, tokio::task::spawn_blocking};
 use s3::{Bucket, Region};
 use std::env;
 use style::{Style, Theme};
 
 const CARGO_PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
+static LOG_LEVEL: Lazy<LogLevel> = Lazy::new(|| {
+	rocket::Config::figment()
+		.extract_inner("log_level")
+		.expect("failed to get log level")
+});
 
 static BUCKET: Lazy<Bucket> = Lazy::new(|| {
 	let s3_server = env::var("PACKS_S3_SERVER").expect("PACKS_S3_SERVER must be set");
@@ -39,7 +45,9 @@ impl<T> ToResultStatus<T> for anyhow::Result<T> {
 		match self {
 			Ok(value) => Ok(value),
 			Err(err) => {
-				eprintln!("   {} {}", ">>".bold(), format!("{} {}", "Error:".bold(), err).red());
+				if *LOG_LEVEL != LogLevel::Off {
+					eprintln!("   {} {}", ">>".bold(), format!("{} {}", "Error:".bold(), err).red());
+				}
 				Err(Status::InternalServerError)
 			},
 		}
@@ -67,10 +75,15 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 		))
 	}
 }
-
 #[launch]
-fn rocket() -> _ {
-	dotenv().ok();
-	futures_executor::block_on(BUCKET.list("/".to_owned(), Some("/".to_owned()))).expect("failed to connect to s3 bucket");
+async fn rocket() -> _ {
+	spawn_blocking(|| dotenv()).await.ok();
+	spawn_blocking(|| Lazy::force(&LOG_LEVEL))
+		.await
+		.expect("error getting log level");
+	BUCKET
+		.list("/".to_owned(), Some("/".to_owned()))
+		.await
+		.expect("failed to connect to s3 bucket");
 	rocket::build().mount("/", routes![index]).attach(Template::fairing())
 }
