@@ -6,9 +6,11 @@ extern crate rocket;
 use rocket::http::Status;
 use rocket_dyn_templates::{context, Template};
 mod style;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use colored::*;
 use dotenv::dotenv;
+use futures_util::future::join_all;
+use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
 use rocket::{config::LogLevel, tokio::task::spawn_blocking};
 use s3::{Bucket, Region};
@@ -68,7 +70,34 @@ async fn index(theme: Option<Theme>, user: Option<&str>) -> Result<Template, Sta
 
 async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 	{
-		BUCKET.list(format!("/{}/", user), Some("/".to_owned())).await?;
+		let mut file_paths = BUCKET
+			.list(format!("/{}/", user), Some("/".to_owned()))
+			.await
+			.context("Error listing bucket:")?
+			.into_iter()
+			.flat_map(|chunk| chunk.contents.into_iter())
+			.map(|obj| obj.key)
+			.filter(|key| key.ends_with(".json"))
+			.collect::<Vec<_>>();
+		file_paths.sort_unstable();
+		let files = file_paths.into_iter().map(|path| BUCKET.get_object(path));
+		let files = join_all(files).await.into_iter();
+		let mut packs: Vec<StickerPack> = Vec::with_capacity(files.len());
+		for file in files {
+			match file {
+				Err(err) => eprintln!("Error loading Stickerpack from bucket {err}"),
+				Ok(value) => {
+					let result: Result<StickerPack, _> = serde_json::from_slice(&value.0);
+					match result {
+						Err(err) => eprintln!("Error parsing Stickerpack {err}"),
+						Ok(value) => packs.push(value),
+					}
+				},
+			}
+		}
+		for pack in packs {
+			println!("{pack:?}");
+		}
 		Ok(Template::render(
 			"picker",
 			context! {cargo_pkg_version: CARGO_PKG_VERSION, cargo_pkg_name: CARGO_PKG_NAME, style},
