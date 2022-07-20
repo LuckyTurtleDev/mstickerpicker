@@ -17,6 +17,7 @@ impl Default for Theme {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Style {
 	font_color: &'static str,
+	font_pale_color: &'static str,
 	background_color: &'static str,
 }
 
@@ -25,14 +26,17 @@ impl From<Theme> for Style {
 		match theme {
 			Theme::Light => Style {
 				font_color: BLACK,
+				font_pale_color: GREY,
 				background_color: WHITE,
 			},
 			Theme::Dark => Style {
 				font_color: WHITE,
-				background_color: "#22252d",
+				font_pale_color: GREY,
+				background_color: "#21262c",
 			},
 			Theme::Black => Style {
 				font_color: WHITE,
+				font_pale_color: GREY,
 				background_color: BLACK,
 			},
 		}

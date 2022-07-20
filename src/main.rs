@@ -14,9 +14,8 @@ use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
 use rocket::{config::LogLevel, tokio::task::spawn_blocking};
 use s3::{Bucket, Region};
-use std::env;
+use std::{collections::BTreeMap, env};
 use style::{Style, Theme};
-use std::collections::BTreeMap;
 
 const CARGO_PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -102,7 +101,6 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 		))
 	}
 }
-
 
 #[launch]
 async fn rocket() -> _ {

@@ -6,6 +6,13 @@ body {
 	color: {{ style.font_color }};
 	margin: 0;
 }
+a {
+	display: inline-block;
+}
+hr {
+	color: {{ style.font_pale_color }};
+	margin: 0;
+}
 .center {
 	min-height: 100vh;
 	display: flex;
@@ -16,4 +23,9 @@ body {
 .pack_title {
 	font-size: min(9vw, 2rem);
 	margin-left: 1ch
+}
+.topbar {
+	position: fixed;
+	width: 100vw;
+	background: {{ style.background_color }};
 }
