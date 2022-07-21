@@ -20,7 +20,8 @@
 			<div>
 				<div class="pack_title">
 					<A NAME="pack{{ loop.index }}">
-					{{ pack.title }}
+						{{ pack.title }}
+					</A>
 				</div>
 				<div>
 					{% for sticker in pack.stickers -%}
