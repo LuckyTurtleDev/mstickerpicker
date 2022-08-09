@@ -12,6 +12,7 @@ use rocket::{http::Status, tokio::task::spawn_blocking};
 use rocket_dyn_templates::{context, Template};
 use s3::{Bucket, Region};
 use std::env;
+use rocket::shield::Shield;
 
 mod style;
 use style::{Style, Theme};
@@ -89,6 +90,7 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 				},
 			}
 		}
+		packs[0].stickers[0].body="'aaaaaaaaaaaaaaaaaaaaaa'".to_owned();
 		Ok(Template::render(
 			"picker",
 			context! {cargo_pkg_name: CARGO_PKG_NAME, packs, style},
@@ -104,5 +106,6 @@ async fn rocket() -> _ {
 		.list("/".to_owned(), Some("/".to_owned()))
 		.await
 		.expect("failed to connect to s3 bucket");
-	rocket::build().mount("/", routes![index]).attach(Template::fairing())
+	let shield = Shield::default().disable::<rocket::shield::Frame>();
+	rocket::build().mount("/", routes![index]).attach(Template::fairing()).attach(shield)
 }
