@@ -24,8 +24,18 @@ hr {
 	font-size: min(9vw, 2rem);
 	margin-left: 1ch
 }
+a.anchor {
+	display: block;
+	position: relative;
+	top: -135px;
+	visibility: hidden;
+}
 .topbar {
+	overflow-y: auto;
 	position: fixed;
 	width: 100vw;
 	background: {{ style.background_color }};
+}
+.topbar div {
+	display: flex;
 }

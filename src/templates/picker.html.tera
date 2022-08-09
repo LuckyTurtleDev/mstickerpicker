@@ -2,26 +2,27 @@
 {% include "head" -%}
 
 <body>
-	<div class="topbar"> 
-		{% for pack in packs -%}
-		{% set index=loop.index -%}
-			{% for sticker in pack.stickers -%}
-				{% if loop.first -%}
-					<a href="#pack{{ index  }}">
-						<img src="{{ get_env(name="HOMESERVER", default="https://matrix.org/") }}/_matrix/media/r0/thumbnail/{{ sticker.url | replace(from="mxc://", to="") }}?height=128&width=128&method=scale" alt="{{ sticker.body }}">
-					</a>
-				{% endif -%}
+	<div class="topbar">
+		<div>
+			{% for pack in packs -%}
+			{% set index=loop.index -%}
+				{% for sticker in pack.stickers -%}
+					{% if loop.first -%}
+						<a href="#pack{{ index  }}">
+							<img src="{{ get_env(name="HOMESERVER", default="https://matrix.org/") }}/_matrix/media/r0/thumbnail/{{ sticker.url | replace(from="mxc://", to="") }}?height=128&width=128&method=scale" alt="{{ sticker.body }}">
+						</a>
+					{% endif -%}
+				{% endfor -%}
 			{% endfor -%}
-		{% endfor -%}
+		</div>
 		<hr>
 	</div>
 	<div>
 		{% for pack in packs -%}
 			<div>
 				<div class="pack_title">
-					<A NAME="pack{{ loop.index }}">
-						{{ pack.title }}
-					</A>
+					<a name="pack{{loop.index}}" class="anchor"></a>
+					<div>{{pack.title}}</div>
 				</div>
 				<div>
 					{% for sticker in pack.stickers -%}
