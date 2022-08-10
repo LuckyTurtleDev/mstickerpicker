@@ -1,0 +1,3 @@
+[submodule "stickerpicker"]
+	path = maunium-stickerpicker
+	url = https://github.com/maunium/stickerpicker.git

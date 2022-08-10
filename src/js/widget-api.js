@@ -1,0 +1,1 @@
+../../maunium-stickerpicker/web/src/widget-api.js

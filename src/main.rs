@@ -8,11 +8,10 @@ use dotenv::dotenv;
 use futures_util::future::join_all;
 use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
-use rocket::{http::Status, tokio::task::spawn_blocking};
+use rocket::{http::Status, shield::Shield, tokio::task::spawn_blocking};
 use rocket_dyn_templates::{context, Template};
 use s3::{Bucket, Region};
 use std::env;
-use rocket::shield::Shield;
 
 mod style;
 use style::{Style, Theme};
@@ -33,6 +32,11 @@ static BUCKET: Lazy<Bucket> = Lazy::new(|| {
 	Bucket::new_public(&s3_bucket, region)
 		.expect("Failed to open bucket")
 		.with_path_style()
+});
+static WIDGET_API: Lazy<String> = Lazy::new(|| {
+	include_str!("js/widget-api.js")
+		.replace("export", "")
+		.replace("sendSticker", "widgetAPISendSticker")
 });
 
 pub trait ToResultStatus<T> {
@@ -90,10 +94,10 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 				},
 			}
 		}
-		packs[0].stickers[0].body="'aaaaaaaaaaaaaaaaaaaaaa'".to_owned();
+
 		Ok(Template::render(
 			"picker",
-			context! {cargo_pkg_name: CARGO_PKG_NAME, packs, style},
+			context! {cargo_pkg_name: CARGO_PKG_NAME, packs, style, widget_api: &*WIDGET_API},
 		))
 	}
 }
@@ -107,5 +111,8 @@ async fn rocket() -> _ {
 		.await
 		.expect("failed to connect to s3 bucket");
 	let shield = Shield::default().disable::<rocket::shield::Frame>();
-	rocket::build().mount("/", routes![index]).attach(Template::fairing()).attach(shield)
+	rocket::build()
+		.mount("/", routes![index])
+		.attach(Template::fairing())
+		.attach(shield)
 }
