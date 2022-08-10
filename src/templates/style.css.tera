@@ -1,18 +1,22 @@
 * {
 	box-sizing: border-box;
 }
+
 body {
 	background-color: {{ style.background_color }};
 	color: {{ style.font_color }};
 	margin: 0;
 }
+
 a {
 	display: inline-block;
 }
+
 hr {
 	color: {{ style.font_pale_color }};
 	margin: 0;
 }
+
 .center {
 	min-height: 100vh;
 	display: flex;
@@ -20,22 +24,48 @@ hr {
 	align-items: center;
 	justify-content: center;
 }
+
 .pack_title {
-	font-size: min(9vw, 2rem);
+	font-size: 1rem;
 	margin-left: 1ch
 }
+
+.sticker_box {
+	display: grid;
+	grid-template-columns: auto auto auto;
+	column-gap: 2.5vw;
+	row-gap: 2.5vw;
+	justify-content: center;
+	align-items: center;
+}
+.sticker_box img {
+	height: 30vw; 
+	width: 30vw;
+	object-fit: contain; 
+	text-align: center;
+}
+
 a.anchor {
 	display: block;
 	position: relative;
-	top: -135px;
+	top: -20vw;
 	visibility: hidden;
 }
+
 .topbar {
 	overflow-y: auto;
 	position: fixed;
 	width: 100vw;
+	height: 20vw;
 	background: {{ style.background_color }};
 }
 .topbar div {
 	display: flex;
+}
+.topbar img {
+	height: 15vw;
+	width: auto;
+}
+.topbar_space{
+	height: 20vw;
 }

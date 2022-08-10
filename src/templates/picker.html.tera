@@ -29,8 +29,8 @@
 				{% endfor -%}
 			{% endfor -%}
 		</div>
-		<hr>
 	</div>
+	<div class="topbar_space"></div>
 	<div>
 		{% for pack in packs -%}
 			<div>
@@ -38,7 +38,7 @@
 					<a name="pack{{loop.index}}" class="anchor"></a>
 					<div>{{pack.title}}</div>
 				</div>
-				<div>
+				<div class="sticker_box">
 					{% for sticker in pack.stickers -%}
 						<img
 							onClick="sendSticker(this)"
@@ -49,6 +49,11 @@
 				</div>
 			</div>
 		{% endfor -%}
+	</div>
+	<div class="pack_title">
+		<a name="settings" class="anchor"></a>
+		<div>Settings</div>
+		<button onClick="javascript:history.go(0)">Refresh Page</button>
 	</div>
 </body>
 </html> 
