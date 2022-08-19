@@ -6,13 +6,13 @@ extern crate rocket;
 use anyhow::{Context, Result};
 use dotenv::dotenv;
 use futures_util::future::join_all;
+use log::*;
 use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
 use rocket::{http::Status, shield::Shield, tokio::task::spawn_blocking};
 use rocket_dyn_templates::{context, Template};
 use s3::{Bucket, Region};
 use std::env;
-use log::*;
 
 mod style;
 use style::{Style, Theme};
