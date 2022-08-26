@@ -61,7 +61,7 @@ jobs:
     - name: Build the Docker image
       run: |
         image="ghcr.io/$GITHUB_REPOSITORY"
-        tags=""
+        tags=()
         tags+="$GITHUB_SHAn"
         tags+=" $GITHUB_REF_NAME"
         if [[ "$GITHUB_REF_TYPE" = tag ]]
@@ -69,7 +69,7 @@ jobs:
           tags+=" latest"
         fi
         tags_command=""
-        while IFS= read -r -d " " tag
+        while IFS= read -r -a tag
         do
           tags_command+=" --tag $image:$tag "
         done <<< tags
