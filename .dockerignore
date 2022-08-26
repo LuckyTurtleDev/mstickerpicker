@@ -1,0 +1,8 @@
+# Ignore everything
+*
+
+# Allow files and directories
+!/src
+!Cargo.toml
+!Cargo.lock
+!/maunium-stickerpicker/web/src/widget-api.js
