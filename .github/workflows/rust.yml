@@ -63,7 +63,7 @@ jobs:
     - name: Build the Docker image
       run: |
         image="ghcr.io/$GITHUB_REPOSITORY"
-        tags=()
+        tags=""
         tags+=" $GITHUB_SHA"
         tags+=" $GITHUB_REF_NAME"
         if [[ "$GITHUB_REF_TYPE" = tag ]]
