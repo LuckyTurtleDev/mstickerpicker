@@ -30,7 +30,8 @@ RUN apk add cargo clang-dev pkgconf \
 
 
 
-FROM scratch
+FROM alpine
 COPY --from=builder /output/bin/mstickerpicker /mstickerpicker
 COPY src/templates/ templates
+RUN apk add libgcc
 CMD ["/mstickerpicker"]
