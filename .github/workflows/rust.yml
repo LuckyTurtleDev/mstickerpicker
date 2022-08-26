@@ -71,10 +71,10 @@ jobs:
           tags+="latest"$'\n'
         fi
         tags_command=""
-        while IFS= read -r -a tag
+        while IFS= read -r tag
         do
           tags_command+=" --tag $image:$tag "
-        done < < $(echo $tags)
+        done < $(echo $tags)
         tags_command="$(echo $tags_command | tr '[:upper:]' '[:lower:]')"
         if [[ "$GITHUB_BASE_REF" == "" ]]
         then
