@@ -64,11 +64,11 @@ jobs:
       run: |
         image="ghcr.io/$GITHUB_REPOSITORY"
         tags=()
-        tags+="$GITHUB_SHA"$'\n'
-        tags+="$GITHUB_REF_NAME"$'\n'
+        tags+=" $GITHUB_SHA"
+        tags+=" $GITHUB_REF_NAME"
         if [[ "$GITHUB_REF_TYPE" = tag ]]
         then
-          tags+="latest"$'\n'
+          tags+=" latest"
         fi
         tags_command=""
         while IFS= read -r tag
