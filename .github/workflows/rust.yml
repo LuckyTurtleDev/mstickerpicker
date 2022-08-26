@@ -76,11 +76,11 @@ jobs:
         tags_command="$(echo $tags_command | tr '[:upper:]' '[:lower:]')"
         if [[ "$GITHUB_BASE_REF" == "" ]]
         then
-          push=""
-          echo "Image will not be pushed. Piepline is a pull request"
-        else
           push="--push"
           echo "Image will be pushed."
+        else
+          push=""
+          echo "Image will not be pushed. Piepline is a pull request"
         fi
         docker login -u "$GITHUB_REPOSITORY_OWNER" -p "${{secrets.GITHUB_TOKEN}}" ghcr.io
         echo "build image with tags: $tags_command"
