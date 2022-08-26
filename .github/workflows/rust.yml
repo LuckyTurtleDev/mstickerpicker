@@ -72,7 +72,7 @@ jobs:
         while IFS= read -r tag
         do
           tags_command+=" --tag $image:$tag "
-        done <<< tags
+        done < < tags
         tags_command="$(echo $tags_command | tr '[:upper:]' '[:lower:]')"
         if [[ "$GITHUB_BASE_REF" == "" ]]
         then
