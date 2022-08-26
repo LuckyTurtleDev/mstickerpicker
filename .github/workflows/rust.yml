@@ -73,7 +73,7 @@ jobs:
         do
           tags_command+=" --tag $image:$tag "
         done <<< tags
-        tags_command=$(echo tags_command | tr '[:upper:]' '[:lower:]')
+        tags_command="$(echo $tags_command | tr '[:upper:]' '[:lower:]')"
         docker login -u "$GITHUB_REPOSITORY_OWNER" -p "${{secrets.GITHUB_TOKEN}}" ghcr.io
         echo "build image with tags: $tags_command"
         docker buildx build ${push} --platform ${PLATFORMS:-linux/amd64} $tags_command .
