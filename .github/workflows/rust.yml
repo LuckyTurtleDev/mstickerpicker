@@ -61,7 +61,7 @@ jobs:
     - name: Build the Docker image
       run: |
         image="ghcr.io/$GITHUB_REPOSITORY"
-        tags=""
+        tags=()
         tags+=" $GITHUB_SHA"
         tags+=" $GITHUB_REF_NAME"
         if [[ "$GITHUB_REF_TYPE" = tag ]]
@@ -72,7 +72,7 @@ jobs:
         while IFS= read -r tag
         do
           tags_command+=" --tag $image:$tag "
-        done << tags
+        done <<< tags
         tags_command="$(echo $tags_command | tr '[:upper:]' '[:lower:]')"
         if [[ "$GITHUB_BASE_REF" == "" ]]
         then
