@@ -69,7 +69,6 @@ jobs:
         then
           tags+="latest"$'\n'
         fi
-        tags=
         tags_command=""
         while IFS= read -r tag
         do
