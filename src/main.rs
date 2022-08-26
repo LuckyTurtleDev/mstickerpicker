@@ -87,7 +87,7 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 			match file {
 				Err(err) => log_error(format!("Error loading Stickerpack from bucket {err}")),
 				Ok(value) => {
-					let result: Result<StickerPack, _> = serde_json::from_slice(&value.0);
+					let result: Result<StickerPack, _> = serde_json::from_slice(&value.bytes());
 					match result {
 						Err(err) => log_error(format!("Error parsing Stickerpack {err}")),
 						Ok(value) => packs.push(value),
