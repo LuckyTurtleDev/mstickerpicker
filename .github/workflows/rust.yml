@@ -74,5 +74,5 @@ jobs:
           tags_command+=" --tag $image:$tag "
         done <<< tags
         docker login -u "$GITHUB_REPOSITORY_OWNER" -p "${{secrets.GITHUB_TOKEN}}" ghcr.io
-        echo "build image with tags: $tags"
-        docker buildx build ${push} --platform ${PLATFORMS:-linux/amd64} $tags .
+        echo "build image with tags: $tags_command"
+        docker buildx build ${push} --platform ${PLATFORMS:-linux/amd64} $tags_command .
