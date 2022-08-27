@@ -66,7 +66,10 @@ jobs:
         image="ghcr.io/$GITHUB_REPOSITORY"
         tags="$GITHUB_SHA"$'\n'
         tags+="${GITHUB_SHA::7}"$'\n'
-        tags+="$GITHUB_REF_NAME"$'\n'
+        if [[ "$GITHUB_BASE_REF" == "" ]] #set tag only if not a merge request 
+        then
+          tags+="$GITHUB_REF_NAME"$'\n'
+        fi
         if [[ "$GITHUB_REF_TYPE" = tag ]]
         then
           tags+="latest"$'\n'
