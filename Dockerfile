@@ -37,3 +37,4 @@ RUN apk add libgcc
 ENV ROCKET_ADDRESS=0.0.0.0
 ENV ROCKET_LOG_LEVEL=normal
 CMD ["/mstickerpicker"]
+USER 1000:1000
