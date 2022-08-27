@@ -56,3 +56,5 @@ jobs:
     steps:
     - name: Easy Docker
       uses: LuckyTurtleDev/easy-docker-action@v1.0
+      with:
+        ghcr_password: ${{ secrets.GITHUB_TOKEN }}
