@@ -1482,7 +1482,6 @@ dependencies = [
  "futures-executor",
  "futures-util",
  "html_color",
- "log",
  "mstickereditor",
  "once_cell",
  "rocket",

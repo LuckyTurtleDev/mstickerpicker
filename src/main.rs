@@ -6,7 +6,6 @@ extern crate rocket;
 use anyhow::{Context, Result};
 use dotenv::dotenv;
 use futures_util::future::join_all;
-use log::*;
 use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
 use rocket::{http::Status, shield::Shield, tokio::task::spawn_blocking};
@@ -16,9 +15,6 @@ use std::env;
 
 mod style;
 use style::{Style, Theme};
-
-mod logging;
-use logging::{force_init, log_error};
 
 const CARGO_PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -49,7 +45,7 @@ impl<T> ToResultStatus<T> for anyhow::Result<T> {
 		match self {
 			Ok(value) => Ok(value),
 			Err(err) => {
-				log_error(err);
+				error!("{}", err);
 				Err(Status::InternalServerError)
 			},
 		}
@@ -85,11 +81,11 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 		let mut packs: Vec<StickerPack> = Vec::with_capacity(files.len());
 		for file in files {
 			match file {
-				Err(err) => log_error(format!("Error loading Stickerpack from bucket {err}")),
+				Err(err) => error!("Error loading Stickerpack from bucket {err}"),
 				Ok(value) => {
 					let result: Result<StickerPack, _> = serde_json::from_slice(&value.bytes());
 					match result {
-						Err(err) => log_error(format!("Error parsing Stickerpack {err}")),
+						Err(err) => error!("Error parsing Stickerpack {err}"),
 						Ok(value) => packs.push(value),
 					}
 				},
@@ -106,7 +102,6 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 #[launch]
 async fn rocket() -> _ {
 	spawn_blocking(|| dotenv()).await.ok();
-	force_init().await.expect("error getting log level");
 	BUCKET
 		.list("/".to_owned(), Some("/".to_owned()))
 		.await
