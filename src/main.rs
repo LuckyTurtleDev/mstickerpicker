@@ -53,8 +53,8 @@ impl<T> ToResultStatus<T> for anyhow::Result<T> {
 }
 
 #[get("/?<theme>&<user>")]
-async fn index(theme: Option<Theme>, user: Option<&str>) -> Result<Template, Status> {
-	let style: Style = theme.unwrap_or_default().into();
+async fn index(theme: Vec<Theme>, user: Option<&str>) -> Result<Template, Status> {
+	let style: Style = theme.into_iter().next().unwrap_or_default().into();
 	match user {
 		None => Ok(Template::render(
 			"index",
