@@ -57,10 +57,15 @@ a.anchor {
 	visibility: hidden;
 }
 
+
+:root {
+	--topbar_height: 15vw;
+}
 .topbar {
 	position: fixed;
+	overflow-y: auto;
 	width: 100vw;
-	height: 15vw;
+	height: var(--topbar_height);
 	background: {{ style.background_color }};
 }
 .topbar * {
@@ -68,12 +73,15 @@ a.anchor {
 }
 .topbar div {
 	display: flex;
-	height: 15vw;
+	height: var(--topbar_height);
 }
 .topbar img {
-	height: 15vw;
+	height: var(--topbar_height);
 	width: auto;
 }
 .topbar_space{
 	height: 20vw;
+}
+.topbar_spaceholder {
+	height: var(--topbar_height);
 }

@@ -27,6 +27,7 @@
 			{% endfor -%}
 		</div>
 	</div>
+	<div class="topbar_spaceholder"></div>
 	<div>
 		{% for pack in packs -%}
 			<div>
