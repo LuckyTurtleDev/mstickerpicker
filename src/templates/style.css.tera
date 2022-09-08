@@ -1,5 +1,10 @@
+*::-webkit-scrollbar {
+	display: none;
+}
+
 * {
 	box-sizing: border-box;
+	scrollbar-width: none; {# nobody implements this despite firefox #}
 }
 
 body {
@@ -48,19 +53,22 @@ hr {
 a.anchor {
 	display: block;
 	position: relative;
-	top: -20vw;
+	top: -15vw;
 	visibility: hidden;
 }
 
 .topbar {
-	overflow-y: auto;
 	position: fixed;
 	width: 100vw;
-	height: 20vw;
+	height: 15vw;
 	background: {{ style.background_color }};
+}
+.topbar * {
+	padding: 0;
 }
 .topbar div {
 	display: flex;
+	height: 15vw;
 }
 .topbar img {
 	height: 15vw;
