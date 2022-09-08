@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-{% include "head" -%}
+{% extends "base" %}
 
-<body>
-	
-	
+{% block body %}
 	<script>
 		function sendSticker(sticker) {
 			const json = sticker.getAttribute("data-json");
@@ -55,5 +52,4 @@
 		<div>Settings</div>
 		<button onClick="javascript:history.go(0)">Refresh Page</button>
 	</div>
-</body>
-</html> 
+{% endblock body %}

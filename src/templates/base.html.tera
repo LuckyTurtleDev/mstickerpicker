@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 	<title>{{ cargo_pkg_name }}</title>
@@ -6,3 +7,8 @@
 		{% include "style" %}
 	</style>
 </head>
+<body>
+	{% block body %}
+	{% endblock body %}
+</body>
+</html>
