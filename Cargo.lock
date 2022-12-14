@@ -521,6 +521,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "de_env"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7766596064ba00a15a5e367ecc2f19185fec6ba1263aeac941b9d472417025f"
+dependencies = [
+ "paste",
+ "serde",
+]
+
+[[package]]
 name = "deunicode"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1478,6 +1488,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "colored",
+ "de_env",
  "dotenv",
  "futures-executor",
  "futures-util",
@@ -1662,6 +1673,12 @@ checksum = "c705f256449c60da65e11ff6626e0c16a0a0b96aaa348de61376b249bc340f41"
 dependencies = [
  "regex",
 ]
+
+[[package]]
+name = "paste"
+version = "1.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf1c2c742266c2f1041c914ba65355a83ae8747b05f208319784083583494b4b"
 
 [[package]]
 name = "pear"
