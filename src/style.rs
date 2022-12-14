@@ -1,7 +1,7 @@
 use html_color::*;
 use serde::Serialize;
 
-#[derive(Debug, PartialEq, FromFormField, Serialize)]
+#[derive(Debug, Eq, PartialEq, FromFormField, Serialize)]
 pub enum Theme {
 	Light,
 	Dark,
@@ -14,7 +14,7 @@ impl Default for Theme {
 	}
 }
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, Eq, PartialEq, Serialize)]
 pub struct Style {
 	font_color: &'static str,
 	font_pale_color: &'static str,

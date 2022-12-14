@@ -17,8 +17,8 @@ use std::{env, process::exit};
 mod style;
 use style::{Style, Theme};
 
-const CARGO_PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
-const CARGO_PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
+const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -103,7 +103,7 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 			match file {
 				Err(err) => error!("Error loading Stickerpack from bucket {err}"),
 				Ok(value) => {
-					let result: Result<StickerPack, _> = serde_json::from_slice(&value.bytes());
+					let result: Result<StickerPack, _> = serde_json::from_slice(value.bytes());
 					match result {
 						Err(err) => error!("Error parsing Stickerpack {err}"),
 						Ok(value) => packs.push(value),
