@@ -14,21 +14,26 @@ body {
 	margin: 0;
 }
 
-input + label {
+.floating_input {
+	position: relative
+}
+
+.floating_input input + label {
 	position: absolute;
-	left: 0;
+	left: 0.1em;
+	top: 0;
 	color: grey;
 	transition: 0.2s;
 }
 
-input:focus + label, input:valid + label {
+.floating_input input:focus + label, .floating_input input:valid + label {
 	color: {{ style.accent_color }};
- 	margin-top: -1.2rem;
+ 	margin-top: -0.8rem;
  	font-size: 0.6rem;
  	transition: 0.2s;
 }
 
-input {
+.floating_input input {
 	border-style: none none solid none;
 	border-color: {{ style.font_color }};
 	outline:none;

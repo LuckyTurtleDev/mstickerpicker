@@ -4,7 +4,7 @@
 	<div class="center">
 		<h1>{{cargo_pkg_name}}</h1>
 		<p></p>
-		<div>
+		<div class="floating_input">
 			<input type="text" id="login_name" required>
 			<label for="login_name">Name</label>
 		</div>
