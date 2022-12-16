@@ -31,7 +31,7 @@ struct Config {
 }
 
 static CONFIG: Lazy<Config> = Lazy::new(|| {
-	dotenv().unwrap();
+	dotenv().ok();
 	let config: Result<Config, _> = de_env::from_env();
 	config.unwrap_or_else(|err| {
 		eprintln!("error loading Environment Variable:\n {:?}", err);

@@ -10,7 +10,28 @@
 body {
 	background-color: {{ style.background_color }};
 	color: {{ style.font_color }};
+	accent-color: accent_color;
 	margin: 0;
+}
+
+input + label {
+	position: absolute;
+	left: 0;
+	color: grey;
+	transition: 0.2s;
+}
+
+input:focus + label, input:valid + label {
+	color: {{ style.accent_color }};
+ 	margin-top: -1.2rem;
+ 	font-size: 0.6rem;
+ 	transition: 0.2s;
+}
+
+input {
+	border-style: none none solid none;
+	border-color: {{ style.font_color }};
+	outline:none;
 }
 
 a {

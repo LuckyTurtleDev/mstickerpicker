@@ -3,9 +3,12 @@
 {% block body %}
 	<div class="center">
 		<h1>{{cargo_pkg_name}}</h1>
+		<p></p>
+		<div>
+			<input type="text" id="login_name" required>
+			<label for="login_name">Name</label>
+		</div>
+		<p></p>
 		<p> {{cargo_pkg_name }} v{{ cargo_pkg_version }} is running at this server</p>
-		<p></p>
-		<p></p>
-		<p> If you has expect to see stickers here you have may forgot to add <code>user=YOUR_USERNAME</code> at the url.</p>
 	</div>
 {% endblock body %}
