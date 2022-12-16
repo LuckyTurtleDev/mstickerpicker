@@ -16,7 +16,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install xrandr
         run: sudo apt-get install -y libxrandr-dev libdbus-1-dev
-      - uses: msrd0/install-rlottie-action@main
+      - uses: msrd0/install-rlottie-action@v1
       - run: cargo test --workspace --all-features
         env:
           RUST_BACKTRACE: 1
