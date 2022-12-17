@@ -7,11 +7,26 @@
 	scrollbar-width: none; {# nobody implements this despite firefox #}
 }
 
+:root {
+	--input_transition: 0.2s;
+}
+
 body {
 	background-color: {{ style.background_color }};
 	color: {{ style.font_color }};
-	accent-color: accent_color;
+	accent-color: {{ style.accent_color }};
 	margin: 0;
+}
+
+input {
+	background-color: {{ style.background_color }};
+	caret-color: {{ style.font_color }};
+	color: {{ style.font_color }};
+	border-style: solid;
+	border-radius: 0.3em;
+	border-width: thin;
+	padding: 0.5em;
+	outline:none;
 }
 
 .floating_input {
@@ -20,23 +35,28 @@ body {
 
 .floating_input input + label {
 	position: absolute;
-	left: 0.1em;
-	top: 0;
+	left: 0.5em;
+	top: 0.25em;
 	color: grey;
-	transition: 0.2s;
+	transition: var(--input_transition);
 }
 
 .floating_input input:focus + label, .floating_input input:valid + label {
-	color: {{ style.accent_color }};
- 	margin-top: -0.8rem;
- 	font-size: 0.6rem;
- 	transition: 0.2s;
+	color: {{ style.font_color }};
+ 	margin-top: -1em;
+ 	font-size: 0.6em;
+ 	transition: var(--input_transition);
+ 	background-color: {{ style.background_color }};
 }
 
-.floating_input input {
-	border-style: none none solid none;
-	border-color: {{ style.font_color }};
-	outline:none;
+.floating_input input:valid  {
+	border-color: grey;
+	transition: var(--input_transition);
+}
+
+.floating_input input:focus {
+	border-color: {{ style.accent_color }};
+	transition: var(--input_transition);
 }
 
 a {

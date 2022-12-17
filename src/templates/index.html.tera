@@ -4,9 +4,10 @@
 	<div class="center">
 		<h1>{{cargo_pkg_name}}</h1>
 		<p></p>
+		<p>Register</p>
 		<div class="floating_input">
-			<input type="text" id="login_name" required>
-			<label for="login_name">Name</label>
+			<input type="text" id="register_token" required>
+			<label for="register_token">register token</label>
 		</div>
 		<p></p>
 		<p> {{cargo_pkg_name }} v{{ cargo_pkg_version }} is running at this server</p>
