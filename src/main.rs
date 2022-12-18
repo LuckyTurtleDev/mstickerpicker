@@ -17,6 +17,9 @@ use std::{env, process::exit};
 mod style;
 use style::{Style, Theme};
 
+mod user;
+use user::*;
+
 const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -129,6 +132,7 @@ async fn rocket() -> _ {
 	let shield = Shield::default().disable::<rocket::shield::Frame>();
 	rocket::build()
 		.mount("/", routes![index])
+		.mount("/register", routes![register])
 		.attach(Template::fairing())
 		.attach(shield)
 }
