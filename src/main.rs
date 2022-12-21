@@ -8,12 +8,11 @@ use dotenv::dotenv;
 use futures_util::future::join_all;
 use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
-use rocket::{http::Status, shield::Shield, tokio::task::spawn_blocking};
+use rocket::{http::Status, shield::Shield, tokio};
 use rocket_dyn_templates::{context, Template};
 use s3::{Bucket, Region};
 use serde::Deserialize;
 use std::{env, process::exit};
-
 mod style;
 use style::{Style, Theme};
 
@@ -43,8 +42,6 @@ static CONFIG: Lazy<Config> = Lazy::new(|| {
 });
 
 static BUCKET: Lazy<Bucket> = Lazy::new(|| {
-	//let s3_server = env::var("PACKS_S3_SERVER").expect("PACKS_S3_SERVER must be set");
-	//let s3_bucket = env::var("PACKS_S3_BUCKET").expect("PACKS_S3_BUCKET must be set");
 	let region = Region::Custom {
 		region: CONFIG.s3_server.clone(),
 		endpoint: CONFIG.s3_server.clone(),
@@ -57,6 +54,12 @@ static WIDGET_API: Lazy<String> = Lazy::new(|| {
 	include_str!("js/widget-api.js")
 		.replace("export", "")
 		.replace("sendSticker", "widgetAPISendSticker")
+});
+
+static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
+	tokio::runtime::Runtime::new().unwrap().block_on(async {
+		sqlx::PgPool::connect("postgres://localhost/mstickerpicker").await.expect("can not connect to database")
+	})
 });
 
 pub trait ToResultStatus<T> {
@@ -122,17 +125,24 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 	}
 }
 
-#[launch]
-async fn rocket() -> _ {
-	spawn_blocking(|| Lazy::force(&CONFIG)).await.unwrap();
-	BUCKET
-		.list("/".to_owned(), Some("/".to_owned()))
-		.await
-		.expect("failed to connect to s3 bucket");
-	let shield = Shield::default().disable::<rocket::shield::Frame>();
-	rocket::build()
-		.mount("/", routes![index])
-		.mount("/register", routes![register])
-		.attach(Template::fairing())
-		.attach(shield)
+fn main() {
+	Lazy::force(&CONFIG);
+	Lazy::force(&SQL_POOL);
+	// WARNING: This is unstable! Do not use this method outside of Rocket!
+	// maybe I should spawn my own tokio runtime
+	::rocket::async_main(async move {
+		let rocket = {
+			BUCKET
+				.list("/".to_owned(), Some("/".to_owned()))
+				.await
+				.expect("failed to connect to s3 bucket");
+			let shield = Shield::default().disable::<rocket::shield::Frame>();
+			rocket::build()
+				.mount("/", routes![index])
+				.mount("/", routes![register])
+				.attach(Template::fairing())
+				.attach(shield)
+		};
+		rocket.launch().await.expect("failed to launch the rocket");
+	})
 }
