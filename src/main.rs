@@ -58,7 +58,9 @@ static WIDGET_API: Lazy<String> = Lazy::new(|| {
 
 static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
 	tokio::runtime::Runtime::new().unwrap().block_on(async {
-		sqlx::PgPool::connect("postgres://localhost/mstickerpicker").await.expect("can not connect to database")
+		sqlx::PgPool::connect("postgres://localhost/mstickerpicker")
+			.await
+			.expect("can not connect to database")
 	})
 });
 
