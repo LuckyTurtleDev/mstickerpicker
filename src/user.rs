@@ -3,7 +3,8 @@ use rand::RngCore;
 use rocket::{self, http::Status};
 
 #[post("/register", data = "<reg_token>")]
-pub(crate) async fn register(reg_token: Vec<u8>) -> Result<Vec<u8>, Status> {//TODO: error handling
+pub(crate) async fn register(reg_token: Vec<u8>) -> Result<Vec<u8>, Status> {
+	//TODO: error handling
 	if reg_token == CONFIG.register_token.as_bytes() {
 		let mut user_token = [0u8; 128];
 		rand::thread_rng().fill_bytes(&mut user_token);
