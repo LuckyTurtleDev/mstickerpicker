@@ -14,8 +14,11 @@ jobs:
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
-      - name: Install xrandr
-        run: sudo apt-get install -y libxrandr-dev libdbus-1-dev
+      - name: install sqlx-cli
+        uses: baptiste0928/cargo-install@v1.3.0
+        with:
+          crate: sqlx-cli
+          version: "0.6"
       - uses: msrd0/install-rlottie-action@v1
       - uses: actions/cache@v3
         with:
