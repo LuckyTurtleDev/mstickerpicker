@@ -199,9 +199,9 @@ dependencies = [
 
 [[package]]
 name = "base64"
-version = "0.13.0"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
+checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
 name = "binascii"
@@ -1580,6 +1580,7 @@ name = "mstickerpicker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64",
  "colored",
  "de_env",
  "dotenv",
@@ -1588,6 +1589,7 @@ dependencies = [
  "html_color",
  "mstickereditor",
  "once_cell",
+ "rand",
  "rocket",
  "rocket_dyn_templates",
  "rust-s3",
