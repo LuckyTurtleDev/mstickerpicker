@@ -26,7 +26,7 @@ COPY . /build
 RUN apk add cargo clang-dev pkgconf \
  && cd /build \
  && ls \
- && cargo install --path . --locked --root /output
+ && DATABASE_URL='postgres://postgres:postgres@localhost/mstickerpicker' cargo install --path . --locked --root /output
 
 
 
