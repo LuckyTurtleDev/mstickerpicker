@@ -47,6 +47,14 @@ jobs:
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost/mstickerpicker
           RUST_BACKTRACE: 1
+      # create sqlx-data.json to build dockerfile without running database
+      - name: sqlx prepare
+        run: cargo sqlx prepare --database-url "postgres://postgres:postgres@localhost/mstickerpicker"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sqlx-data
+          path: sqlx-data.json
+          retention-days: 2
 
 
   rustfmt:
@@ -63,11 +71,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: sqlx-data
     - name: Easy Docker
-      uses: LuckyTurtleDev/easy-docker-action@test
+      uses: LuckyTurtleDev/easy-docker-action@main
       with:
         ghcr_password: ${{ secrets.GITHUB_TOKEN }}
-        buildx_config_inline: |
-         insecure-entitlements = [ "network.host" ]
-         [worker.oci]
-         max-parallelism = 2
