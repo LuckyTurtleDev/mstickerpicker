@@ -6,3 +6,4 @@
 !Cargo.toml
 !Cargo.lock
 !/maunium-stickerpicker/web/src/widget-api.js
+!/sqlx-data.json
