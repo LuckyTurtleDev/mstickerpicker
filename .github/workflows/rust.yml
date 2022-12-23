@@ -74,6 +74,7 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: sqlx-data
+    - run: ls
     - name: Easy Docker
       uses: LuckyTurtleDev/easy-docker-action@main
       with:
