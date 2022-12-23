@@ -67,4 +67,7 @@ jobs:
       uses: LuckyTurtleDev/easy-docker-action@test
       with:
         ghcr_password: ${{ secrets.GITHUB_TOKEN }}
-        buildx_config_inline: 'insecure-entitlements = [ "network.host" ]'
+        buildx_config_inline: |
+         insecure-entitlements = [ "network.host" ]
+         [worker.oci]
+         max-parallelism = 2
