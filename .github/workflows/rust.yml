@@ -8,36 +8,53 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mstickerpicker
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v2
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
-      - name: Install xrandr
-        run: sudo apt-get install -y libxrandr-dev libdbus-1-dev
-      - name: Install rlottie
-        run: |
-          sudo apt-get install -y ninja-build
-          wget -q "https://github.com/Samsung/rlottie/archive/refs/tags/v$pkgver.tar.gz"
-          tar xfz v$pkgver.tar.gz
-          cd rlottie-$pkgver
-          wget -q "https://aur.archlinux.org/cgit/aur.git/plain/0001-add-missing-include.patch?h=rlottie" -o 0001-add-missing-include.patch
-          patch --forward --strip=0 --input=0001-add-missing-include.patch
-          mkdir -p build
-          cd build
-          cmake .. \
-            -G Ninja \
-            -DCMAKE_INSTALL_PREFIX=/usr \
-            -DCMAKE_BUILD_TYPE=Release
-          ninja
-          sudo ninja install
-          cd ../..
-        env:
-          pkgver: "0.2"
+      - name: install sqlx-cli
+        uses: baptiste0928/cargo-install@v1.3.0
+        with:
+          crate: sqlx-cli
+          version: "0.6"
+      - uses: msrd0/install-rlottie-action@v1
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/git
+            ~/.cargo/registry
+            target
+          key: "${{runner.os}} Rust ${{steps.rust-toolchain.outputs.cachekey}}"
       - run: cargo test --workspace --all-features
         env:
+          DATABASE_URL: postgres://postgres:postgres@localhost/mstickerpicker
           RUST_BACKTRACE: 1
+      # create sqlx-data.json to build dockerfile without running database
+      - name: sqlx prepare
+        run: cargo sqlx prepare --database-url "postgres://postgres:postgres@localhost/mstickerpicker"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sqlx-data
+          path: sqlx-data.json
+          retention-days: 2
 
 
   rustfmt:
@@ -54,6 +71,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - uses: actions/download-artifact@v3
+      with:
+        name: sqlx-data
     - name: Easy Docker
       uses: LuckyTurtleDev/easy-docker-action@main
       with:

@@ -8,25 +8,45 @@ use dotenv::dotenv;
 use futures_util::future::join_all;
 use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
-use rocket::{http::Status, shield::Shield, tokio::task::spawn_blocking};
+use rocket::{http::Status, shield::Shield, tokio};
 use rocket_dyn_templates::{context, Template};
 use s3::{Bucket, Region};
-use std::env;
-
+use serde::Deserialize;
+use std::{env, process::exit};
 mod style;
 use style::{Style, Theme};
 
-const CARGO_PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
-const CARGO_PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
+mod user;
+use user::*;
+
+const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
+const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+struct Config {
+	#[serde(rename = "PACKS_S3_SERVER")]
+	s3_server: String,
+	#[serde(rename = "PACKS_S3_BUCKET")]
+	s3_bucket: String,
+	register_token: String,
+}
+
+static CONFIG: Lazy<Config> = Lazy::new(|| {
+	dotenv().ok();
+	let config: Result<Config, _> = de_env::from_env();
+	config.unwrap_or_else(|err| {
+		eprintln!("error loading Environment Variable:\n {:?}", err);
+		exit(1)
+	})
+});
 
 static BUCKET: Lazy<Bucket> = Lazy::new(|| {
-	let s3_server = env::var("PACKS_S3_SERVER").expect("PACKS_S3_SERVER must be set");
-	let s3_bucket = env::var("PACKS_S3_BUCKET").expect("PACKS_S3_BUCKET must be set");
 	let region = Region::Custom {
-		region: s3_server.clone(),
-		endpoint: s3_server,
+		region: CONFIG.s3_server.clone(),
+		endpoint: CONFIG.s3_server.clone(),
 	};
-	Bucket::new_public(&s3_bucket, region)
+	Bucket::new_public(&CONFIG.s3_bucket, region)
 		.expect("Failed to open bucket")
 		.with_path_style()
 });
@@ -34,6 +54,19 @@ static WIDGET_API: Lazy<String> = Lazy::new(|| {
 	include_str!("js/widget-api.js")
 		.replace("export", "")
 		.replace("sendSticker", "widgetAPISendSticker")
+});
+
+static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
+	tokio::runtime::Runtime::new().unwrap().block_on(async {
+		let pool = sqlx::PgPool::connect("postgres://localhost/mstickerpicker")
+			.await
+			.expect("can not connect to database");
+		sqlx::migrate!("src/migrations")
+			.run(&pool)
+			.await
+			.expect("database migration has failed");
+		pool
+	})
 });
 
 pub trait ToResultStatus<T> {
@@ -83,7 +116,7 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 			match file {
 				Err(err) => error!("Error loading Stickerpack from bucket {err}"),
 				Ok(value) => {
-					let result: Result<StickerPack, _> = serde_json::from_slice(&value.bytes());
+					let result: Result<StickerPack, _> = serde_json::from_slice(value.bytes());
 					match result {
 						Err(err) => error!("Error parsing Stickerpack {err}"),
 						Ok(value) => packs.push(value),
@@ -99,16 +132,24 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 	}
 }
 
-#[launch]
-async fn rocket() -> _ {
-	spawn_blocking(|| dotenv()).await.ok();
-	BUCKET
-		.list("/".to_owned(), Some("/".to_owned()))
-		.await
-		.expect("failed to connect to s3 bucket");
-	let shield = Shield::default().disable::<rocket::shield::Frame>();
-	rocket::build()
-		.mount("/", routes![index])
-		.attach(Template::fairing())
-		.attach(shield)
+fn main() {
+	Lazy::force(&CONFIG);
+	Lazy::force(&SQL_POOL);
+	// WARNING: This is unstable! Do not use this method outside of Rocket!
+	// maybe I should spawn my own tokio runtime
+	::rocket::async_main(async move {
+		let rocket = {
+			BUCKET
+				.list("/".to_owned(), Some("/".to_owned()))
+				.await
+				.expect("failed to connect to s3 bucket");
+			let shield = Shield::default().disable::<rocket::shield::Frame>();
+			rocket::build()
+				.mount("/", routes![index])
+				.mount("/", routes![register])
+				.attach(Template::fairing())
+				.attach(shield)
+		};
+		rocket.launch().await.expect("failed to launch the rocket");
+	})
 }

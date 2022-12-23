@@ -26,7 +26,8 @@ COPY . /build
 RUN apk add cargo clang-dev pkgconf \
  && cd /build \
  && ls \
- && cargo install --path . --locked --root /output
+ && SQLX_OFFLINE=true cargo install --path . --locked --root /output
+
 
 
 
