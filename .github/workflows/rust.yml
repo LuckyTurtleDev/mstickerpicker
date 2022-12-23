@@ -80,3 +80,5 @@ jobs:
         name: sqlx-data
     - name: Easy Docker
       uses: LuckyTurtleDev/easy-docker-action@main
+      with:
+        ghcr_password: ${{ secrets.GITHUB_TOKEN }}
