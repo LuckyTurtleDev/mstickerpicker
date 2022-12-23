@@ -64,6 +64,7 @@ jobs:
     needs: [test]
     steps:
     - name: Easy Docker
-      uses: LuckyTurtleDev/easy-docker-action@main
+      uses: LuckyTurtleDev/easy-docker-action@test
       with:
         ghcr_password: ${{ secrets.GITHUB_TOKEN }}
+        buildx_config: 'insecure-entitlements = [ "network.host" ]'
