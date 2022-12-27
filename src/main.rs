@@ -14,6 +14,7 @@ use s3::{Bucket, Region};
 use serde::Deserialize;
 use std::{env, process::exit};
 mod style;
+use actix_web::{get, http::header::ContentType, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 use style::{Style, Theme};
 
 mod user;
@@ -85,8 +86,16 @@ impl<T> ToResultStatus<T> for anyhow::Result<T> {
 	}
 }
 
-#[get("/?<theme>&<user>")]
-async fn index(theme: Vec<Theme>, user: Option<&str>) -> Result<Template, Status> {
+#[derive(Debug, Deserialize)]
+pub struct IndexQuerry {
+	theme: Theme,
+	user: Option<String>,
+}
+
+#[get("/")]
+async fn index(query: web::Query<IndexQuerry>) -> actix_web::Result<String> {
+	Ok(format!("{query:?}"))
+	/*
 	let style: Style = theme.into_iter().next().unwrap_or_default().into();
 	match user {
 		None => Ok(Template::render(
@@ -94,7 +103,7 @@ async fn index(theme: Vec<Theme>, user: Option<&str>) -> Result<Template, Status
 			context! {cargo_pkg_version: CARGO_PKG_VERSION, cargo_pkg_name: CARGO_PKG_NAME, style},
 		)),
 		Some(user) => stickerpicker(user, &style).await.to_res_stat(),
-	}
+	}*/
 }
 
 async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
@@ -132,24 +141,25 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 	}
 }
 
+#[actix_web::main]
+async fn actix_main() -> std::io::Result<()> {
+	BUCKET
+		.list("/".to_owned(), Some("/".to_owned()))
+		.await
+		.expect("failed to connect to s3 bucket");
+	HttpServer::new(|| {
+		App::new()
+			.service(index)
+			.wrap(Logger::new("%U by %{User-Agent}i -> %s in %T second"))
+	})
+	.bind(("127.0.0.1", 8080))?
+	.run()
+	.await
+}
+
 fn main() {
+	env_logger::init();
 	Lazy::force(&CONFIG);
 	Lazy::force(&SQL_POOL);
-	// WARNING: This is unstable! Do not use this method outside of Rocket!
-	// maybe I should spawn my own tokio runtime
-	::rocket::async_main(async move {
-		let rocket = {
-			BUCKET
-				.list("/".to_owned(), Some("/".to_owned()))
-				.await
-				.expect("failed to connect to s3 bucket");
-			let shield = Shield::default().disable::<rocket::shield::Frame>();
-			rocket::build()
-				.mount("/", routes![index])
-				.mount("/", routes![register])
-				.attach(Template::fairing())
-				.attach(shield)
-		};
-		rocket.launch().await.expect("failed to launch the rocket");
-	})
+	actix_main().expect("failed to start web server");
 }

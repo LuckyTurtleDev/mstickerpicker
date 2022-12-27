@@ -1,19 +1,15 @@
 use html_color::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 const ELEMENT_GREEN: &'static str = "#0dbd8b";
 
-#[derive(Debug, Eq, PartialEq, FromFormField, Serialize)]
+#[derive(Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Theme {
+	#[default]
 	Light,
 	Dark,
 	Black,
-}
-
-impl Default for Theme {
-	fn default() -> Self {
-		Theme::Light
-	}
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize)]

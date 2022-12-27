@@ -7,10 +7,12 @@ publish = false
 
 [dependencies]
 anyhow = "1.0"
+actix-web = { version = "4.2.1", default-features = false, features = ["macros"] }
 base64 = "0.13.1" # I do not like the new api above 20; wait for https://github.com/marshallpierce/rust-base64/issues/205#issuecomment-1346718136
 colored = "2.0"
 de_env = { version = "1.0.0", default-features = false }
 dotenv = "0.15"
+env_logger = { version = "0.10.0", default-features = false, features = ["color", "humantime", "auto-color"] }
 futures-executor = "0.3"
 futures-util = "0.3"
 html_color = "0.0"
