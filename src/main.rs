@@ -2,23 +2,34 @@
 #![forbid(unsafe_code)]
 
 #[macro_use]
-extern crate rocket;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use dotenv::dotenv;
 use futures_util::future::join_all;
 use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
-use rocket::{http::Status, shield::Shield, tokio};
-use rocket_dyn_templates::{context, Template};
 use s3::{Bucket, Region};
 use serde::Deserialize;
 use std::{env, process::exit};
 mod style;
-use actix_web::{get, http::header::ContentType, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
+use ::tera::Context;
+use actix_web::{
+	get,
+	http::{header::ContentType, StatusCode},
+	middleware::Logger,
+	web, App, HttpRequest, HttpResponse, HttpServer, Responder,
+};
 use style::{Style, Theme};
 
-mod user;
-use user::*;
+mod tera;
+use crate::tera::render_template;
+
+mod error;
+use error::ServerError;
+
+mod html;
+use html::Html;
+
+mod routes;
 
 const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -70,42 +81,7 @@ static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
 	})
 });
 
-pub trait ToResultStatus<T> {
-	fn to_res_stat(self) -> Result<T, Status>;
-}
-
-impl<T> ToResultStatus<T> for anyhow::Result<T> {
-	fn to_res_stat(self) -> Result<T, Status> {
-		match self {
-			Ok(value) => Ok(value),
-			Err(err) => {
-				error!("{}", err);
-				Err(Status::InternalServerError)
-			},
-		}
-	}
-}
-
-#[derive(Debug, Deserialize)]
-pub struct IndexQuerry {
-	theme: Theme,
-	user: Option<String>,
-}
-
-#[get("/")]
-async fn index(query: web::Query<IndexQuerry>) -> actix_web::Result<String> {
-	Ok(format!("{query:?}"))
-	/*
-	let style: Style = theme.into_iter().next().unwrap_or_default().into();
-	match user {
-		None => Ok(Template::render(
-			"index",
-			context! {cargo_pkg_version: CARGO_PKG_VERSION, cargo_pkg_name: CARGO_PKG_NAME, style},
-		)),
-		Some(user) => stickerpicker(user, &style).await.to_res_stat(),
-	}*/
-}
-
+/*
 async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 	{
 		let mut file_paths = BUCKET
@@ -139,7 +115,7 @@ async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
 			context! {cargo_pkg_name: CARGO_PKG_NAME, packs, style, widget_api: &*WIDGET_API},
 		))
 	}
-}
+}*/
 
 #[actix_web::main]
 async fn actix_main() -> std::io::Result<()> {
@@ -149,7 +125,7 @@ async fn actix_main() -> std::io::Result<()> {
 		.expect("failed to connect to s3 bucket");
 	HttpServer::new(|| {
 		App::new()
-			.service(index)
+			.service(routes::index::index)
 			.wrap(Logger::new("%U by %{User-Agent}i -> %s in %T second"))
 	})
 	.bind(("127.0.0.1", 8080))?

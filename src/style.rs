@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 const ELEMENT_GREEN: &'static str = "#0dbd8b";
 
-#[derive(Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
 	#[default]
