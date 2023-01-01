@@ -71,6 +71,7 @@ async fn actix_main() -> std::io::Result<()> {
 		App::new()
 			.service(routes::index::index)
 			.service(routes::picker::picker)
+			.service(routes::register::register)
 			.wrap(Logger::new("%U by %{User-Agent}i -> %s in %T second"))
 	})
 	.bind(("127.0.0.1", 8080))?
