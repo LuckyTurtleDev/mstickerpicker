@@ -1,5 +1,5 @@
 use html_color::*;
-use serde::{Deserialize, Serialize};
+use serde::{self, de, Deserialize, Serialize};
 
 const ELEMENT_GREEN: &'static str = "#0dbd8b";
 
@@ -10,6 +10,14 @@ pub enum Theme {
 	Light,
 	Dark,
 	Black,
+}
+
+pub fn deserilize_theme<'de, D>(deserializer: D) -> Result<Theme, D::Error>
+where
+	D: de::Deserializer<'de>,
+{
+	let theme_vec: Vec<Theme> = Vec::deserialize(deserializer)?;
+	Ok(theme_vec.into_iter().next().unwrap_or_default())
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize)]

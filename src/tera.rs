@@ -1,5 +1,7 @@
-use once_cell::sync::Lazy;
 use tera::{Context, Tera};
+
+#[cfg(not(debug_assertions))]
+use once_cell::sync::Lazy;
 
 #[cfg(debug_assertions)]
 macro_rules! add_template {
@@ -24,6 +26,7 @@ pub fn init_tera() -> Tera {
 	add_template!(tera, "templates/style.css.tera", "style.css");
 	add_template!(tera, "templates/base.html.tera", "base.html");
 	add_template!(tera, "templates/index.html.tera", "index.html");
+	add_template!(tera, "templates/picker.html.tera", "picker.html");
 	tera
 }
 

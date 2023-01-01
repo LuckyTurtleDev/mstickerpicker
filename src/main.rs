@@ -1,35 +1,20 @@
 #![warn(rust_2018_idioms)]
 #![forbid(unsafe_code)]
 
-#[macro_use]
 use anyhow::Result;
 use dotenv::dotenv;
-use futures_util::future::join_all;
-use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
 use s3::{Bucket, Region};
 use serde::Deserialize;
 use std::{env, process::exit};
-mod style;
-use ::tera::Context;
-use actix_web::{
-	get,
-	http::{header::ContentType, StatusCode},
-	middleware::Logger,
-	web, App, HttpRequest, HttpResponse, HttpServer, Responder,
-};
-use style::{Style, Theme};
 
-mod tera;
-use crate::tera::render_template;
+use actix_web::{middleware::Logger, App, HttpServer};
 
 mod error;
-use error::ServerError;
-
 mod html;
-use html::Html;
-
 mod routes;
+mod style;
+mod tera;
 
 const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -62,11 +47,6 @@ static BUCKET: Lazy<Bucket> = Lazy::new(|| {
 		.expect("Failed to open bucket")
 		.with_path_style()
 });
-static WIDGET_API: Lazy<String> = Lazy::new(|| {
-	include_str!("js/widget-api.js")
-		.replace("export", "")
-		.replace("sendSticker", "widgetAPISendSticker")
-});
 
 static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
 	tokio::runtime::Runtime::new().unwrap().block_on(async {
@@ -81,42 +61,6 @@ static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
 	})
 });
 
-/*
-async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
-	{
-		let mut file_paths = BUCKET
-			.list(format!("/{}/", user), Some("/".to_owned()))
-			.await
-			.context("Error listing bucket:")?
-			.into_iter()
-			.flat_map(|chunk| chunk.contents.into_iter())
-			.map(|obj| obj.key)
-			.filter(|key| key.ends_with(".json"))
-			.collect::<Vec<_>>();
-		file_paths.sort_unstable();
-		let files = file_paths.into_iter().map(|path| BUCKET.get_object(path));
-		let files = join_all(files).await.into_iter();
-		let mut packs: Vec<StickerPack> = Vec::with_capacity(files.len());
-		for file in files {
-			match file {
-				Err(err) => error!("Error loading Stickerpack from bucket {err}"),
-				Ok(value) => {
-					let result: Result<StickerPack, _> = serde_json::from_slice(value.bytes());
-					match result {
-						Err(err) => error!("Error parsing Stickerpack {err}"),
-						Ok(value) => packs.push(value),
-					}
-				},
-			}
-		}
-
-		Ok(Template::render(
-			"picker",
-			context! {cargo_pkg_name: CARGO_PKG_NAME, packs, style, widget_api: &*WIDGET_API},
-		))
-	}
-}*/
-
 #[actix_web::main]
 async fn actix_main() -> std::io::Result<()> {
 	BUCKET
@@ -126,6 +70,7 @@ async fn actix_main() -> std::io::Result<()> {
 	HttpServer::new(|| {
 		App::new()
 			.service(routes::index::index)
+			.service(routes::picker::picker)
 			.wrap(Logger::new("%U by %{User-Agent}i -> %s in %T second"))
 	})
 	.bind(("127.0.0.1", 8080))?

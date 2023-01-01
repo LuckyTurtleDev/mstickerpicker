@@ -5,6 +5,8 @@ use thiserror::Error;
 pub enum ServerError {
 	#[error("{0}")]
 	Tera(#[from] tera::Error),
+	#[error("{0}")]
+	S3Error(#[from] s3::error::S3Error),
 }
 
 impl actix_web::error::ResponseError for ServerError {
