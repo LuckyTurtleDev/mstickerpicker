@@ -2,7 +2,6 @@ use crate::{error::ServerError, CONFIG, SQL_POOL};
 use actix_web::post;
 use rand::RngCore;
 
-
 #[post("/register")]
 pub(crate) async fn register(reg_token: actix_web::web::Bytes) -> Result<Vec<u8>, ServerError> {
 	if reg_token == CONFIG.register_token.as_bytes() {
