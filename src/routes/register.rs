@@ -1,10 +1,9 @@
-use crate::{CONFIG, SQL_POOL};
+use crate::{error::ServerError, CONFIG, SQL_POOL};
+use actix_web::post;
 use rand::RngCore;
-use rocket::{self, http::Status};
 
-#[post("/register", data = "<reg_token>")]
-pub(crate) async fn register(reg_token: Vec<u8>) -> Result<Vec<u8>, Status> {
-	//TODO: error handling
+#[post("/register")]
+pub(crate) async fn register(reg_token: actix_web::web::Bytes) -> Result<Vec<u8>, ServerError> {
 	if reg_token == CONFIG.register_token.as_bytes() {
 		let mut user_token = [0u8; 128];
 		rand::thread_rng().fill_bytes(&mut user_token);
@@ -18,5 +17,5 @@ pub(crate) async fn register(reg_token: Vec<u8>) -> Result<Vec<u8>, Status> {
 		.unwrap(); //TODO: error handling
 		return Ok(user_token.to_vec());
 	}
-	Err(Status::Unauthorized)
+	Err(ServerError::WrongToken)
 }

@@ -1,19 +1,23 @@
 use html_color::*;
-use serde::Serialize;
+use serde::{self, de, Deserialize, Serialize};
 
 const ELEMENT_GREEN: &'static str = "#0dbd8b";
 
-#[derive(Debug, Eq, PartialEq, FromFormField, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Theme {
+	#[default]
 	Light,
 	Dark,
 	Black,
 }
 
-impl Default for Theme {
-	fn default() -> Self {
-		Theme::Light
-	}
+pub fn deserilize_theme<'de, D>(deserializer: D) -> Result<Theme, D::Error>
+where
+	D: de::Deserializer<'de>,
+{
+	let theme_vec: Vec<Theme> = Vec::deserialize(deserializer)?;
+	Ok(theme_vec.into_iter().next().unwrap_or_default())
 }
 
 #[derive(Debug, Eq, PartialEq, Serialize)]

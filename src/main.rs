@@ -1,23 +1,20 @@
 #![warn(rust_2018_idioms)]
 #![forbid(unsafe_code)]
 
-#[macro_use]
-extern crate rocket;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use dotenv::dotenv;
-use futures_util::future::join_all;
-use mstickereditor::stickerpicker::StickerPack;
 use once_cell::sync::Lazy;
-use rocket::{http::Status, shield::Shield, tokio};
-use rocket_dyn_templates::{context, Template};
 use s3::{Bucket, Region};
 use serde::Deserialize;
 use std::{env, process::exit};
-mod style;
-use style::{Style, Theme};
 
-mod user;
-use user::*;
+use actix_web::{middleware::Logger, App, HttpServer};
+
+mod error;
+mod html;
+mod routes;
+mod style;
+mod tera;
 
 const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -50,11 +47,6 @@ static BUCKET: Lazy<Bucket> = Lazy::new(|| {
 		.expect("Failed to open bucket")
 		.with_path_style()
 });
-static WIDGET_API: Lazy<String> = Lazy::new(|| {
-	include_str!("js/widget-api.js")
-		.replace("export", "")
-		.replace("sendSticker", "widgetAPISendSticker")
-});
 
 static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
 	tokio::runtime::Runtime::new().unwrap().block_on(async {
@@ -69,87 +61,27 @@ static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
 	})
 });
 
-pub trait ToResultStatus<T> {
-	fn to_res_stat(self) -> Result<T, Status>;
-}
-
-impl<T> ToResultStatus<T> for anyhow::Result<T> {
-	fn to_res_stat(self) -> Result<T, Status> {
-		match self {
-			Ok(value) => Ok(value),
-			Err(err) => {
-				error!("{}", err);
-				Err(Status::InternalServerError)
-			},
-		}
-	}
-}
-
-#[get("/?<theme>&<user>")]
-async fn index(theme: Vec<Theme>, user: Option<&str>) -> Result<Template, Status> {
-	let style: Style = theme.into_iter().next().unwrap_or_default().into();
-	match user {
-		None => Ok(Template::render(
-			"index",
-			context! {cargo_pkg_version: CARGO_PKG_VERSION, cargo_pkg_name: CARGO_PKG_NAME, style},
-		)),
-		Some(user) => stickerpicker(user, &style).await.to_res_stat(),
-	}
-}
-
-async fn stickerpicker(user: &str, style: &Style) -> Result<Template> {
-	{
-		let mut file_paths = BUCKET
-			.list(format!("/{}/", user), Some("/".to_owned()))
-			.await
-			.context("Error listing bucket:")?
-			.into_iter()
-			.flat_map(|chunk| chunk.contents.into_iter())
-			.map(|obj| obj.key)
-			.filter(|key| key.ends_with(".json"))
-			.collect::<Vec<_>>();
-		file_paths.sort_unstable();
-		let files = file_paths.into_iter().map(|path| BUCKET.get_object(path));
-		let files = join_all(files).await.into_iter();
-		let mut packs: Vec<StickerPack> = Vec::with_capacity(files.len());
-		for file in files {
-			match file {
-				Err(err) => error!("Error loading Stickerpack from bucket {err}"),
-				Ok(value) => {
-					let result: Result<StickerPack, _> = serde_json::from_slice(value.bytes());
-					match result {
-						Err(err) => error!("Error parsing Stickerpack {err}"),
-						Ok(value) => packs.push(value),
-					}
-				},
-			}
-		}
-
-		Ok(Template::render(
-			"picker",
-			context! {cargo_pkg_name: CARGO_PKG_NAME, packs, style, widget_api: &*WIDGET_API},
-		))
-	}
+#[actix_web::main]
+async fn actix_main() -> std::io::Result<()> {
+	BUCKET
+		.list("/".to_owned(), Some("/".to_owned()))
+		.await
+		.expect("failed to connect to s3 bucket");
+	HttpServer::new(|| {
+		App::new()
+			.service(routes::index::index)
+			.service(routes::picker::picker)
+			.service(routes::register::register)
+			.wrap(Logger::new("%U by %{User-Agent}i -> %s in %T second"))
+	})
+	.bind(("127.0.0.1", 8080))?
+	.run()
+	.await
 }
 
 fn main() {
+	env_logger::init();
 	Lazy::force(&CONFIG);
 	Lazy::force(&SQL_POOL);
-	// WARNING: This is unstable! Do not use this method outside of Rocket!
-	// maybe I should spawn my own tokio runtime
-	::rocket::async_main(async move {
-		let rocket = {
-			BUCKET
-				.list("/".to_owned(), Some("/".to_owned()))
-				.await
-				.expect("failed to connect to s3 bucket");
-			let shield = Shield::default().disable::<rocket::shield::Frame>();
-			rocket::build()
-				.mount("/", routes![index])
-				.mount("/", routes![register])
-				.attach(Template::fairing())
-				.attach(shield)
-		};
-		rocket.launch().await.expect("failed to launch the rocket");
-	})
+	actix_main().expect("failed to start web server");
 }
