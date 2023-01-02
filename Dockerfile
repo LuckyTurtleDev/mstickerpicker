@@ -33,9 +33,7 @@ RUN apk add cargo clang-dev pkgconf \
 
 FROM alpine
 COPY --from=builder /output/bin/mstickerpicker /mstickerpicker
-COPY src/templates/ templates
 RUN apk add libgcc
-ENV ROCKET_ADDRESS=0.0.0.0
-ENV ROCKET_LOG_LEVEL=normal
+ENV RUST_LOG=info
 CMD ["/mstickerpicker"]
 USER 1000:1000

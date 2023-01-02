@@ -17,7 +17,7 @@ pub enum ServerError {
 impl actix_web::error::ResponseError for ServerError {
 	fn error_response(&self) -> HttpResponse {
 		let message = match self {
-			Self::WrongToken => "wrong tonken",
+			Self::WrongToken => "wrong token",
 			_ => "",
 		};
 		HttpResponse::build(self.status_code())

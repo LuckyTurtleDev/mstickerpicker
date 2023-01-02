@@ -41,5 +41,5 @@ pub fn render_template(template: &str, context: &Context) -> Result<String, tera
 		return tera.render(template, context);
 	}
 	#[cfg(not(debug_assertions))]
-	TERA.render(template, context);
+	TERA.render(template, context)
 }
