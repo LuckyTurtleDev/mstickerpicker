@@ -26,10 +26,11 @@ jobs:
           
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
+        id: "rust-toolchain"
       - name: install sqlx-cli
         uses: baptiste0928/cargo-install@v1.3.0
         with:
@@ -42,7 +43,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/registry
             target
-          key: "${{runner.os}} Rust ${{steps.rust-toolchain.outputs.cachekey}}"
+          key: "${{runner.os}} Rust ${{steps.rust-toolchain.outputs.cachekey}} Lock ${{hashFiles('Cargo.lock')}}"
       - run: cargo test --workspace --all-features
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost/mstickerpicker
@@ -60,7 +61,7 @@ jobs:
   rustfmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
