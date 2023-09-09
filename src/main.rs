@@ -1,14 +1,15 @@
 #![warn(rust_2018_idioms)]
 #![forbid(unsafe_code)]
 
+use actix_web::{middleware::Logger, App, HttpServer};
 use anyhow::Result;
 use dotenv::dotenv;
 use once_cell::sync::Lazy;
+use poem::{get, listener::TcpListener, Route, Server};
 use s3::{Bucket, Region};
 use serde::Deserialize;
 use std::{env, process::exit};
-
-use actix_web::{middleware::Logger, App, HttpServer};
+use tokio;
 
 mod error;
 mod html;
@@ -69,7 +70,6 @@ async fn actix_main() -> std::io::Result<()> {
 		.expect("failed to connect to s3 bucket");
 	HttpServer::new(|| {
 		App::new()
-			.service(routes::index::index)
 			.service(routes::picker::picker)
 			.service(routes::register::register)
 			.wrap(Logger::new("%U by %{User-Agent}i -> %s in %T second"))
@@ -79,9 +79,18 @@ async fn actix_main() -> std::io::Result<()> {
 	.await
 }
 
+#[tokio::main]
+async fn tokio_main() {
+	let routes = Route::new().at("/", get(routes::index::index));
+	Server::new(TcpListener::bind("127.0.0.1:8080"))
+		.run(routes)
+		.await
+		.expect("failed to start server");
+}
+
 fn main() {
 	env_logger::init();
 	Lazy::force(&CONFIG);
 	Lazy::force(&SQL_POOL);
-	actix_main().expect("failed to start web server");
+	tokio_main();
 }
