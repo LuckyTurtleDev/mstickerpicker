@@ -11,7 +11,7 @@ use actix_web_lab::extract::Query;
 use anyhow::Result;
 use futures_util::future::join_all;
 use log::error;
-use mstickereditor::stickerpicker::StickerPack;
+use mstickerlib::matrix::stickerpack::StickerPack;
 use once_cell::sync::Lazy;
 use serde::{self, Deserialize};
 

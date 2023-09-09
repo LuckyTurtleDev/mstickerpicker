@@ -28,3 +28,4 @@ tokio = { version = "1.23.0", default-features = false, features = ["fs", "parki
 log = "0.4.17"
 thiserror = "1.0.38"
 actix-web-lab = "0.18.8"
+mstickerlib = { version = "0.1.0", default-features = false, features = ["log"] }
