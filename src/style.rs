@@ -3,8 +3,9 @@ use serde::{self, de, Deserialize, Serialize};
 
 const ELEMENT_GREEN: &'static str = "#0dbd8b";
 
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, strum_macros::Display, Default, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "snake_case")]
 pub enum Theme {
 	#[default]
 	Light,
@@ -22,10 +23,22 @@ where
 
 #[derive(Debug, Eq, PartialEq, Serialize)]
 pub struct Style {
-	font_color: &'static str,
-	font_pale_color: &'static str,
-	background_color: &'static str,
-	accent_color: &'static str,
+	pub font_color: &'static str,
+	pub font_pale_color: &'static str,
+	pub background_color: &'static str,
+	pub accent_color: &'static str,
+}
+
+impl Style {
+	pub fn to_css(&self) -> String {
+		let Style {
+			font_color,
+			font_pale_color,
+			background_color,
+			accent_color,
+		} = self;
+		format!("--font_color: {font_color}; --font_pale_color: {font_pale_color}; --background_color: {background_color}; --accent_color: {accent_color};")
+	}
 }
 
 impl From<Theme> for Style {

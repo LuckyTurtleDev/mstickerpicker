@@ -9,8 +9,8 @@ use poem::{get, listener::TcpListener, Route, Server};
 use s3::{Bucket, Region};
 use serde::Deserialize;
 use std::{env, process::exit};
-use tokio;
 
+mod components;
 mod error;
 mod html;
 mod routes;
@@ -81,7 +81,9 @@ async fn actix_main() -> std::io::Result<()> {
 
 #[tokio::main]
 async fn tokio_main() {
-	let routes = Route::new().at("/", get(routes::index::index));
+	let routes = Route::new()
+		.at("/", get(routes::index::index))
+		.at("/css", get(routes::css::css));
 	Server::new(TcpListener::bind("127.0.0.1:8080"))
 		.run(routes)
 		.await

@@ -1,28 +1,41 @@
 use crate::{
-	style::{deserilize_theme, Style, Theme},
+	components::render,
+	style::{Style, Theme},
 	CARGO_PKG_NAME, CARGO_PKG_VERSION,
 };
-use ::tera::Context;
-use anyhow::Result;
 use poem::{
 	handler,
 	web::{Html, Query},
 };
 use serde::{self, Deserialize};
+use yew::prelude::*;
 
 #[derive(Debug, Deserialize)]
 pub struct QueryData {
-	#[serde(default)]
-	theme: Theme,
+	theme: Option<Theme>,
 	user: Option<String>,
 }
 
 #[handler]
-pub fn index(Query(query): Query<QueryData>) -> Result<Html<String>, poem::Error> {
-	let style: Style = query.theme.into();
-	let mut context = Context::new();
-	context.insert("cargo_pkg_version", CARGO_PKG_VERSION);
-	context.insert("cargo_pkg_name", CARGO_PKG_NAME);
-	context.insert("style", &style);
-	Ok(Html("hello world".to_owned()))
+pub async fn index(Query(query): Query<QueryData>) -> Html<String> {
+	render::<App>(query.theme).await
+}
+
+#[derive(PartialEq, Properties)]
+pub struct Props {}
+
+#[function_component]
+fn App() -> yew::Html {
+	html! {
+		<div class="center">
+		<h1>{{CARGO_PKG_NAME}}</h1>
+		<p></p>
+		<p>{"Register"}</p>
+		<div class="login">
+			<button type="button">{"Register"}</button>
+		</div>
+		<p></p>
+		<p> {CARGO_PKG_NAME}{" v "}{CARGO_PKG_VERSION}{" is running at this server"}</p>
+	</div>
+	}
 }

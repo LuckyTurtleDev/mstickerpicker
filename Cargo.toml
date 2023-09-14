@@ -30,3 +30,5 @@ thiserror = "1.0.38"
 actix-web-lab = "0.18.8"
 mstickerlib = { version = "0.1.0", default-features = false, features = ["log"] }
 poem = "1.3.58"
+yew = { version = "0.20.0", features = ["ssr"] }
+strum_macros = "0.25.2"

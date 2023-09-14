@@ -1,0 +1,150 @@
+*::-webkit-scrollbar {
+	display: none;
+}
+
+* {
+	box-sizing: border-box;
+	scrollbar-width: none; /* nobody implements this despite firefox */
+}
+
+:root {
+	--input_transition: 0.2s;
+	--border-radius: 0.3em;
+}
+
+body {
+	background-color: var(--background_color);
+	color: var(--font_color);
+	accent-color: var(--accent_color);
+	margin: 0;
+}
+
+input {
+	background-color: var(--background_color);
+	caret-color: var(--font_color);
+	color: var(--font_color);
+	border-color: grey;
+	border-style: solid;
+	border-radius: var(--border-radius);
+	border-width: thin;
+	padding: 0.5em;
+	outline:none;
+	transition: var(--input_transition);
+}
+
+.floating_input {
+	position: relative
+}
+
+.floating_input input + label {
+	position: absolute;
+	left: 0.5em;
+	top: 0.25em;
+	color: grey;
+	transition: var(--input_transition);
+}
+
+.floating_input input:focus + label, .floating_input input:valid + label {
+	color: var(--font_color);
+ 	margin-top: -1em;
+ 	font-size: 0.6em;
+ 	transition: var(--input_transition);
+ 	background-color: var(--background_color);
+}
+
+.floating_input input:focus {
+	border-color: var(--style.accent_color);
+	transition: var(--input_transition);
+}
+
+button {
+	color: white;
+	background-color: var(--accent_color);
+	border-style: none;
+	border-radius: var(--border-radius);
+	border-width: thin;
+	height: 2.2em;
+}
+
+.login {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.login input{
+	width: 100%;
+}
+
+a {
+	display: inline-block;
+}
+
+hr {
+	color: var(--font_pale_color);
+	margin: 0;
+}
+
+.center {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.pack_title {
+	font-size: 1rem;
+	margin-left: 1ch
+}
+
+.sticker_box {
+	display: grid;
+	grid-template-columns: auto auto auto;
+	column-gap: 2.5vw;
+	row-gap: 2.5vw;
+	justify-content: center;
+	align-items: center;
+}
+.sticker_box img {
+	height: 30vw; 
+	width: 30vw;
+	object-fit: contain; 
+	text-align: center;
+}
+
+a.anchor {
+	display: block;
+	position: relative;
+	top: -15vw;
+	visibility: hidden;
+}
+
+
+:root {
+	--topbar_height: 15vw;
+}
+.topbar {
+	position: fixed;
+	overflow-y: auto;
+	width: 100vw;
+	height: var(--topbar_height);
+	background: var(--background_color);
+}
+.topbar * {
+	padding: 0;
+}
+.topbar div {
+	display: flex;
+	height: var(--topbar_height);
+}
+.topbar img {
+	height: var(--topbar_height);
+	width: auto;
+}
+.topbar_space{
+	height: 20vw;
+}
+.topbar_spaceholder {
+	height: var(--topbar_height);
+}
