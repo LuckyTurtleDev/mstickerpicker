@@ -23,7 +23,7 @@ RUN apk add cmake g++ gcc libc-dev ninja patch wget \
 COPY . /build
 
 # compile mstickerpicher
-RUN apk add cargo clang-dev pkgconf \
+RUN apk add cargo clang-dev pkgconf ffmpeg-dev \
  && cd /build \
  && ls \
  && SQLX_OFFLINE=true cargo install --path . --locked --root /output
@@ -33,7 +33,7 @@ RUN apk add cargo clang-dev pkgconf \
 
 FROM alpine
 COPY --from=builder /output/bin/mstickerpicker /mstickerpicker
-RUN apk add libgcc
+RUN apk add libgcc ffmpeg
 ENV RUST_LOG=info
 CMD ["/mstickerpicker"]
 USER 1000:1000
