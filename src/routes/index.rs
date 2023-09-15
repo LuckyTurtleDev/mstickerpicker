@@ -1,5 +1,5 @@
 use crate::{
-	components::render,
+	components::{input::Input, render},
 	style::{Style, Theme},
 	CARGO_PKG_NAME, CARGO_PKG_VERSION,
 };
@@ -9,7 +9,6 @@ use poem::{
 };
 use serde::{self, Deserialize};
 use yew::prelude::*;
-use crate::components::input::Input;
 
 #[derive(Debug, Deserialize)]
 pub struct QueryData {
@@ -37,7 +36,7 @@ fn App() -> yew::Html {
 			<button type="button">{"Register"}</button>
 		</div>
 		<p></p>
-		<p> {CARGO_PKG_NAME}{" v "}{CARGO_PKG_VERSION}{" is running at this server"}</p>
+		<p> {CARGO_PKG_NAME}{" v"}{CARGO_PKG_VERSION}{" is running at this server"}</p>
 	</div>
 	}
 }

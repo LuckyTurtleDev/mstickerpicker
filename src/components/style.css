@@ -47,7 +47,7 @@ input {
 .floating_input input:focus + label, .floating_input input:valid + label {
 	color: var(--font_color);
  	margin-top: -1em;
- 	font-size: 0.6em;
+ 	font-size: 0.8em;
  	transition: var(--input_transition);
  	background-color: var(--background_color);
 }
@@ -59,6 +59,7 @@ input {
 
 button {
 	color: white;
+	font-weight: bold;
 	background-color: var(--accent_color);
 	border-style: none;
 	border-radius: var(--border-radius);
