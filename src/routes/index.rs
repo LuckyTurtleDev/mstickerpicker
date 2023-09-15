@@ -9,6 +9,7 @@ use poem::{
 };
 use serde::{self, Deserialize};
 use yew::prelude::*;
+use crate::components::input::Input;
 
 #[derive(Debug, Deserialize)]
 pub struct QueryData {
@@ -32,6 +33,7 @@ fn App() -> yew::Html {
 		<p></p>
 		<p>{"Register"}</p>
 		<div class="login">
+			<Input id={"register_token"} label={"register token"}/>
 			<button type="button">{"Register"}</button>
 		</div>
 		<p></p>

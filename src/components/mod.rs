@@ -4,6 +4,8 @@ use crate::{
 };
 use yew::ServerRenderer;
 
+pub mod input;
+
 pub(crate) async fn render<T>(theme: Option<Theme>) -> poem::web::Html<String>
 where
 	T: yew::html::BaseComponent,
