@@ -1,5 +1,5 @@
 use crate::{
-	style::{self, Style, Theme},
+	style::{Style, Theme},
 	CARGO_PKG_NAME,
 };
 use yew::ServerRenderer;
