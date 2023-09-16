@@ -32,9 +32,12 @@ fn App() -> yew::Html {
 		<p></p>
 		<p>{"Register"}</p>
 		<div class="login">
-			<Input id={"register_token"} label={"register token"}/>
-			<button type="button">{"Register"}</button>
+			<form action="/register" method="post">
+				<Input id={"register_token"} label={"register token"}/>
+				<button type="submit">{"Register"}</button>
+			</form>
 		</div>
+		<p></p>
 		<p></p>
 		<p> {CARGO_PKG_NAME}{" v"}{CARGO_PKG_VERSION}{" is running at this server"}</p>
 	</div>
