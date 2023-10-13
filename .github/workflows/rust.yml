@@ -25,6 +25,7 @@ jobs:
           - 5432:5432
           
     steps:
+      - run: sudo apt-get update -y && sudo apt-get install -y libavc1394-dev libavdevice-dev
       - name: Checkout repository and submodules
         uses: actions/checkout@v3
         with:
