@@ -1,3 +1,4 @@
+use crate::matrix::{start_matrix, MatrixConfig};
 use anyhow::Context;
 use axum::{
 	routing::{get, post},
@@ -7,8 +8,6 @@ use dotenv::dotenv;
 use log::info;
 use serde::{de, Deserialize};
 use tokio::try_join;
-
-use crate::matrix::{start_matrix, MatrixConfig};
 
 mod components;
 mod matrix;
@@ -26,12 +25,14 @@ fn load_env(var: &str) -> String {
 #[tokio::main]
 async fn main() {
 	dotenv().ok();
-	let matrix_config = MatrixConfig {
-		homeserver_url: load_env("MARIX_HOMESERVER_URL"),
-		username: load_env("MARIX_USERNAME"),
-		password: load_env("MARIX_PASSWORD")
-	};
-	my_env_logger_style::just_log();
+	let matrix_config = MatrixConfig::from_env();
+	my_env_logger_style::builder()
+		//the filter don not work for some reason
+		.filter_module("matrix_sdk", log::LevelFilter::Warn)
+		.filter_module("matrix_sdk_base", log::LevelFilter::Warn)
+		.filter_module("matrix_sdk_crypto", log::LevelFilter::Warn)
+		.filter_module("ruma_common", log::LevelFilter::Warn)
+		.init();
 	let app = Router::new()
 		.route("/", get(routes::index))
 		.route("/css", get(routes::css))
