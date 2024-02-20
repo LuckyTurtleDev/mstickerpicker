@@ -1,3 +1,4 @@
+use super::cli::execute_cli;
 use crate::MatrixConfig;
 use log::info;
 use matrix_sdk::{
@@ -37,16 +38,16 @@ pub async fn on_room_message(
 		return;
 	}
 
-	if text_content.body.contains("!party") {
-		let content = RoomMessageEventContent::text_plain("🎉🎊🥳 let's PARTY!! 🥳🎊🎉")
-			.make_reply_to(
-				&event.into_full_event(room.room_id().into()),
-				ForwardThread::No,
-				AddMentions::Yes
-			);
-		info!("sending");
-		// send our message to the room we found the "!party" command in
-		room.send(content).await.unwrap();
-		info!("message sent");
-	}
+	let content = match execute_cli(client.user_id().unwrap(), &text_content.body) {
+		Ok(value) => value,
+		Err(err) => RoomMessageEventContent::text_plain(format!("{err:?}"))
+	};
+	let content = content.make_reply_to(
+		&event.into_full_event(room.room_id().into()),
+		ForwardThread::No,
+		AddMentions::Yes
+	);
+	info!("sending");
+	room.send(content).await.unwrap();
+	info!("message sent");
 }
