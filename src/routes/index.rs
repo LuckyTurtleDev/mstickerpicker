@@ -4,7 +4,6 @@ use crate::{
 };
 use axum::response::Html;
 use axum_extra::extract::Query;
-
 use serde::Deserialize;
 use yew::prelude::*;
 
