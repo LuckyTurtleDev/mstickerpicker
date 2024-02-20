@@ -1,93 +1,21 @@
+mod join;
+mod message;
+
 use crate::load_env;
-use log::{error, info, warn};
+use join::*;
+use log::info;
 use matrix_sdk::{
 	config::SyncSettings,
 	ruma::{
 		events::room::{
-			member::StrippedRoomMemberEvent,
-			message::{
-				MessageType, OriginalSyncRoomMessageEvent, RoomMessageEventContent
-			}
+			member::StrippedRoomMemberEvent, message::OriginalSyncRoomMessageEvent
 		},
 		OwnedServerName, OwnedUserId, ServerName, UserId
 	},
-	Client, Room, RoomState
+	Client, Room
 };
-use std::{collections::HashSet, sync::Arc, time::Duration};
-use tokio::time::sleep;
-
-async fn on_room_message(
-	event: OriginalSyncRoomMessageEvent,
-	room: Room,
-	client: Client,
-	config: Arc<MatrixConfig>
-) {
-	if room.state() != RoomState::Joined {
-		return;
-	}
-	let MessageType::Text(text_content) = event.content.msgtype else {
-		return;
-	};
-	if event.sender == client.user_id().unwrap() {
-		return;
-	}
-
-	if !config.user_allowed.is_allowed(&event.sender) {
-		let content = RoomMessageEventContent::text_plain(
-			"Error: You have no permission to use this bot"
-		);
-		room.send(content).await.unwrap();
-		return;
-	}
-
-	if text_content.body.contains("!party") {
-		let content = RoomMessageEventContent::text_plain("🎉🎊🥳 let's PARTY!! 🥳🎊🎉");
-		info!("sending");
-		// send our message to the room we found the "!party" command in
-		room.send(content).await.unwrap();
-		info!("message sent");
-	}
-}
-
-/// auto join
-async fn on_join(
-	room_member: StrippedRoomMemberEvent,
-	client: Client,
-	room: Room,
-	config: Arc<MatrixConfig>
-) {
-	if room_member.state_key != client.user_id().unwrap() {
-		return;
-	}
-
-	if !config.user_allowed.is_allowed(&room_member.sender) {
-		return;
-	}
-
-	tokio::spawn(async move {
-		info!("Autojoining room {}", room.room_id());
-		let mut delay = 2;
-
-		while let Err(err) = room.join().await {
-			// retry autojoin due to synapse sending invites, before the
-			// invited user can join for more information see
-			// https://github.com/matrix-org/synapse/issues/4345
-			warn!(
-				"Failed to join room {} ({err:?}), retrying in {delay}s",
-				room.room_id()
-			);
-
-			sleep(Duration::from_secs(delay)).await;
-			delay *= 2;
-
-			if delay > 3600 {
-				error!("Can't join room {} ({err:?})", room.room_id());
-				break;
-			}
-		}
-		info!("Successfully joined room {}", room.room_id());
-	});
-}
+use message::*;
+use std::{collections::HashSet, sync::Arc};
 
 #[derive(Debug)]
 pub struct MatrixConfig {
