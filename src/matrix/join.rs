@@ -1,21 +1,16 @@
-use crate::MatrixConfig;
+use crate::CONFIG;
 use log::{error, info, warn};
 use matrix_sdk::{ruma::events::room::member::StrippedRoomMemberEvent, Client, Room};
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 use tokio::time::sleep;
 
 /// auto join
-pub async fn on_join(
-	room_member: StrippedRoomMemberEvent,
-	client: Client,
-	room: Room,
-	config: Arc<MatrixConfig>
-) {
+pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room: Room) {
 	if room_member.state_key != client.user_id().unwrap() {
 		return;
 	}
 
-	if !config.user_allowed.is_allowed(&room_member.sender) {
+	if !CONFIG.matrix.user_allowed.is_allowed(&room_member.sender) {
 		return;
 	}
 

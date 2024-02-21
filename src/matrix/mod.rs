@@ -2,21 +2,16 @@ mod cli;
 mod join;
 mod message;
 
-use crate::load_env;
+use crate::{load_env, CONFIG};
 use join::*;
 use log::info;
 use matrix_sdk::{
 	config::SyncSettings,
-	ruma::{
-		events::room::{
-			member::StrippedRoomMemberEvent, message::OriginalSyncRoomMessageEvent
-		},
-		OwnedServerName, OwnedUserId, ServerName, UserId
-	},
-	Client, Room
+	ruma::{OwnedServerName, OwnedUserId, ServerName, UserId},
+	Client
 };
 use message::*;
-use std::{collections::HashSet, sync::Arc};
+use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct MatrixConfig {
@@ -82,40 +77,29 @@ pub enum UserOrServer {
 	User(OwnedUserId)
 }
 
-pub async fn start_matrix(config: MatrixConfig) -> anyhow::Result<()> {
-	info!("{config:#?}");
-	let config = Arc::new(config);
+pub async fn start_matrix() -> anyhow::Result<()> {
 	// Note that when encryption is enabled, you should use a persistent store to be
 	// able to restore the session with a working encryption setup.
 	// See the `persist_session` example.
 	let client = Client::builder()
-		.homeserver_url(&config.homeserver_url)
+		.homeserver_url(&CONFIG.matrix.homeserver_url)
 		.build()
 		.await?;
 	client
 		.matrix_auth()
-		.login_username(&config.username, &config.password)
+		.login_username(&CONFIG.matrix.username, &CONFIG.matrix.password)
 		.initial_device_display_name("command bot")
 		.await?;
 
-	info!("logged in at matrix as {}", config.username);
+	info!("logged in at matrix as {}", CONFIG.matrix.username);
 
 	// An initial sync to set up state and so our bot doesn't respond to old
 	// messages. But we want to still process invites.
-	let config_tmp = config.clone();
-	client.add_event_handler(
-		|room_member: StrippedRoomMemberEvent, client: Client, room: Room| async move {
-			on_join(room_member, client, room, config_tmp).await
-		}
-	);
+	client.add_event_handler(on_join);
 	let response = client.sync_once(SyncSettings::default()).await?;
 	// add our CommandBot to be notified of incoming messages, we do this after the
 	// initial sync to avoid responding to messages before the bot was running.
-	client.add_event_handler(
-		|event: OriginalSyncRoomMessageEvent, client: Client, room: Room| async move {
-			on_room_message(event, room, client, config).await
-		}
-	);
+	client.add_event_handler(on_room_message);
 
 	// since we called `sync_once` before we entered our sync loop we must pass
 	// that sync token to `sync`

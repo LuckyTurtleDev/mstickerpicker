@@ -1,61 +1,111 @@
-use crate::matrix::{start_matrix, MatrixConfig};
-use anyhow::Context;
-use axum::{
-	routing::{get, post},
-	Router
-};
-use dotenv::dotenv;
-use log::info;
-use serde::{de, Deserialize};
-use tokio::try_join;
-
 mod components;
 mod matrix;
 mod routes;
 mod style;
 
+use std::{fmt::Debug, process::exit};
+
+use anyhow::Context;
+use dotenv::dotenv;
+use log::info;
+use matrix::{start_matrix, MatrixConfig};
+use once_cell::sync::Lazy;
+use routes::get_router;
+use serde::{de, Deserialize};
+use tokio::try_join;
+
 const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-fn load_env(var: &str) -> String {
-	#![allow(clippy::expect_fun_call)]
-	std::env::var(var).expect(&format!("Enviroment variable {var:?} must be set"))
+static CONFIG: Lazy<Config> = Lazy::new(|| {
+	let matrix = MatrixConfig::from_env();
+	Config { matrix }
+});
+
+static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
+	tokio::runtime::Runtime::new().unwrap().block_on(async {
+		let pool = sqlx::PgPool::connect("postgres://localhost/mstickerpicker")
+			.await
+			.context("can not connect to database")
+			.ok_or_exit();
+		sqlx::migrate!("src/migrations")
+			.run(&pool)
+			.await
+			.context("database migration has failed")
+			.ok_or_exit();
+		pool
+	})
+});
+
+///read only config
+struct Config {
+	matrix: MatrixConfig
 }
 
-#[tokio::main]
-async fn main() {
+fn load_env(var: &str) -> String {
+	std::env::var(var)
+		.with_context(|| format!("Enviroment variable {var:?} must be set"))
+		.ok_or_exit()
+}
+
+trait ErrorExit {
+	type Item;
+	/// eprint Debug and exit if Result is error.
+	/// Otherwise return value
+	fn ok_or_exit(self) -> Self::Item;
+}
+
+impl<T, E> ErrorExit for Result<T, E>
+where
+	E: Debug
+{
+	type Item = T;
+	fn ok_or_exit(self) -> Self::Item {
+		match self {
+			Ok(value) => value,
+			Err(err) => {
+				eprintln!("\nError: {err:?}");
+				exit(1);
+			}
+		}
+	}
+}
+
+fn main() {
 	dotenv().ok();
-	let matrix_config = MatrixConfig::from_env();
+	Lazy::force(&CONFIG);
 	my_env_logger_style::builder()
-		//the filter don not work for some reason
+		//the filter do not work for some reason
 		.filter_module("matrix_sdk", log::LevelFilter::Warn)
 		.filter_module("matrix_sdk_base", log::LevelFilter::Warn)
 		.filter_module("matrix_sdk_crypto", log::LevelFilter::Warn)
 		.filter_module("ruma_common", log::LevelFilter::Warn)
 		.init();
-	let app = Router::new()
-		.route("/", get(routes::index))
-		.route("/css", get(routes::css))
-		.route("/register", get(routes::register))
-		.route("/register", post(routes::register_post))
-		.route("/login", get(routes::login));
-	let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+	info!("starting {CARGO_PKG_NAME} v{CARGO_PKG_VERSION}");
+	Lazy::force(&SQL_POOL);
+	tokio_main().ok_or_exit();
+}
+
+#[tokio::main]
+async fn tokio_main() -> anyhow::Result<()> {
+	let router = get_router();
+	let listener = tokio::net::TcpListener::bind("0.0.0.0:8080")
+		.await
+		.context("failed to bind socket")?;
 	info!("statring web server at http://localhost:8080/");
-	let res = try_join!(
+	try_join!(
 		async {
-			axum::serve(listener, app)
+			axum::serve(listener, router)
 				.await
 				.context("failed to start axum webserver")
 		},
 		async {
-			start_matrix(matrix_config)
+			start_matrix()
 				.await
-				.context("failed to start matrix client")
+				.context("error while running matrix client")
 		}
-	);
-	if let Err(err) = res {
-		panic!("{err:?}")
-	}
+	)?;
+	Ok(())
 }
 
 pub fn take_first<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>

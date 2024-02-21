@@ -1,5 +1,5 @@
 use super::cli::execute_cli;
-use crate::MatrixConfig;
+use crate::CONFIG;
 use log::info;
 use matrix_sdk::{
 	ruma::events::room::message::{
@@ -8,13 +8,11 @@ use matrix_sdk::{
 	},
 	Client, Room, RoomState
 };
-use std::sync::Arc;
 
 pub async fn on_room_message(
 	event: OriginalSyncRoomMessageEvent,
 	room: Room,
-	client: Client,
-	config: Arc<MatrixConfig>
+	client: Client
 ) {
 	if room.state() != RoomState::Joined {
 		return;
@@ -25,7 +23,7 @@ pub async fn on_room_message(
 	if event.sender == client.user_id().unwrap() {
 		return;
 	}
-	if !config.user_allowed.is_allowed(&event.sender) {
+	if !CONFIG.matrix.user_allowed.is_allowed(&event.sender) {
 		let content = RoomMessageEventContent::text_plain(
 			"Error: You have no permission to use this bot"
 		)
