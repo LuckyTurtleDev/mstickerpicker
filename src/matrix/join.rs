@@ -18,9 +18,11 @@ pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room:
 		return;
 	}
 
-	if !CONFIG.matrix.user_allowed.is_allowed(&room_member.sender) {
-		return;
-	}
+	if !CONFIG.matrix.user_allowed.is_allowed_ignore_err(&room_member.sender).await
+		{
+			return;
+		}
+	
 
 	tokio::spawn(async move {
 		info!("Autojoining room {}", room.room_id());

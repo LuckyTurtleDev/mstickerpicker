@@ -1,17 +1,17 @@
 mod components;
 mod matrix;
 mod routes;
+mod sql;
 mod style;
-
-use std::{fmt::Debug, process::exit};
 
 use anyhow::Context;
 use dotenv::dotenv;
-use log::info;
+use log::{error, info};
 use matrix::{start_matrix, MatrixConfig};
 use once_cell::sync::Lazy;
 use routes::get_router;
 use serde::{de, Deserialize};
+use std::{fmt::Debug, process::exit};
 use tokio::try_join;
 
 const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
@@ -48,14 +48,15 @@ fn load_env(var: &str) -> String {
 		.ok_or_exit()
 }
 
-trait ErrorExit {
+trait ErrorFun {
 	type Item;
 	/// eprint Debug and exit if Result is error.
 	/// Otherwise return value
 	fn ok_or_exit(self) -> Self::Item;
+	fn ok_or_log(self) -> Option<Self::Item>;
 }
 
-impl<T, E> ErrorExit for Result<T, E>
+impl<T, E> ErrorFun for Result<T, E>
 where
 	E: Debug
 {
@@ -66,6 +67,16 @@ where
 			Err(err) => {
 				eprintln!("\nError: {err:?}");
 				exit(1);
+			}
+		}
+	}
+
+	fn ok_or_log(self) -> Option<Self::Item> {
+		match self {
+			Ok(value) => Some(value),
+			Err(err) => {
+				error!("Error: {err:?}");
+				None
 			}
 		}
 	}

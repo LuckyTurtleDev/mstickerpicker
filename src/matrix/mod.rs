@@ -2,12 +2,12 @@ mod cli;
 mod join;
 mod message;
 
-use crate::{load_env, CONFIG};
+use crate::{load_env, CONFIG, sql::try_get_user_id, ErrorFun};
 use join::*;
 use log::info;
 use matrix_sdk::{
 	config::SyncSettings,
-	ruma::{OwnedServerName, OwnedUserId, ServerName, UserId},
+	ruma::{ServerName, UserId},
 	Client
 };
 use message::*;
@@ -34,7 +34,7 @@ impl MatrixConfig {
 #[derive(Debug)]
 enum UserAllowed {
 	All,
-	Some(HashSet<UserOrServer>)
+	Some(HashSet<String>)
 }
 
 impl UserAllowed {
@@ -45,36 +45,46 @@ impl UserAllowed {
 			Self::All
 		} else {
 			let allowed_user = env.split(',').map(|f| {
+				//user and server names can never be equal. So we can just put simple strings at the HashMap
+				//We still prase the input, to make sure it is valid and well formated
 				if f.contains(':') {
 					let user = UserId::parse(f)
 						.expect(&format!("{f:?} is no valid matrix user name"));
-					UserOrServer::User(user)
+					format!("{user}")
 				} else {
 					let server = ServerName::parse(f)
 						.expect(&format!("{f:?} is no valid matrix server name"));
-					UserOrServer::Server(server)
+					format!("{server}")
 				}
 			});
 			Self::Some(allowed_user.collect())
 		}
 	}
 
-	fn is_allowed(&self, user: &OwnedUserId) -> bool {
+	async fn is_allowed(&self, user: &UserId) -> Result<bool, sqlx::Error> {
 		match self {
-			Self::All => true,
-			Self::Some(set) => {
-				let server = user.server_name();
-				set.contains(&UserOrServer::Server(server.into()))
-					|| set.contains(&UserOrServer::User(user.to_owned()))
+			Self::All => Ok(true),
+			Self::Some(set) => { 
+				//we want to check local allow list first, before asking the database
+				if set.contains(&format!("{}",user.server_name())) || set.contains(&format!("{user}")) {
+				return Ok(true);
+			}
+			try_get_user_id(user)
+			.await.map(|f| f.is_some())
+			
 			}
 		}
 	}
-}
-
-#[derive(Debug, Hash, PartialEq, Eq)]
-pub enum UserOrServer {
-	Server(OwnedServerName),
-	User(OwnedUserId)
+	
+	/// if a error occures it will be log and false will be return
+	async fn is_allowed_ignore_err(&self, user: &UserId) -> bool {
+		// if !Some(true) = foo    is not support, so convert this to bool
+		// and ! can be used again
+		if Some(true) == self.is_allowed(user).await.ok_or_log() {
+			return true;
+		}
+		false
+	}
 }
 
 pub async fn start_matrix() -> anyhow::Result<()> {

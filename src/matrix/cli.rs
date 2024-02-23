@@ -1,4 +1,4 @@
-use crate::CARGO_PKG_NAME;
+use crate::{sql::get_or_creat_user_id, CARGO_PKG_NAME};
 use clap::{Command, Parser, Subcommand as _};
 use matrix_sdk::ruma::{events::room::message::RoomMessageEventContent, UserId};
 use once_cell::sync::Lazy;
@@ -19,9 +19,10 @@ pub fn get_command() -> Command {
 	COMMAND.to_owned()
 }
 
-pub fn execute_cli(
+pub async fn execute_cli(
 	bot_user: &UserId,
-	input: &str
+	input: &str,
+	user: &UserId
 ) -> anyhow::Result<RoomMessageEventContent> {
 	let cli = get_command();
 	// TODO: deal with spaces in arguments
@@ -42,5 +43,6 @@ pub fn execute_cli(
 			))
 		},
 	};
-	Ok(RoomMessageEventContent::text_plain("Sucess"))
+	let res = get_or_creat_user_id(user).await;
+	Ok(RoomMessageEventContent::text_plain(format!("{res:?}")))
 }
