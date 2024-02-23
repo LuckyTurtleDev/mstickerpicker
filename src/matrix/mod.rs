@@ -2,7 +2,7 @@ mod cli;
 mod join;
 mod message;
 
-use crate::{load_env, CONFIG, sql::try_get_user_id, ErrorFun};
+use crate::{load_env, sql::try_get_user_id, ErrorFun, CONFIG};
 use join::*;
 use log::info;
 use matrix_sdk::{
@@ -64,18 +64,18 @@ impl UserAllowed {
 	async fn is_allowed(&self, user: &UserId) -> Result<bool, sqlx::Error> {
 		match self {
 			Self::All => Ok(true),
-			Self::Some(set) => { 
+			Self::Some(set) => {
 				//we want to check local allow list first, before asking the database
-				if set.contains(&format!("{}",user.server_name())) || set.contains(&format!("{user}")) {
-				return Ok(true);
-			}
-			try_get_user_id(user)
-			.await.map(|f| f.is_some())
-			
+				if set.contains(&format!("{}", user.server_name()))
+					|| set.contains(&format!("{user}"))
+				{
+					return Ok(true);
+				}
+				try_get_user_id(user).await.map(|f| f.is_some())
 			}
 		}
 	}
-	
+
 	/// if a error occures it will be log and false will be return
 	async fn is_allowed_ignore_err(&self, user: &UserId) -> bool {
 		// if !Some(true) = foo    is not support, so convert this to bool

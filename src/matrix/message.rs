@@ -27,7 +27,12 @@ pub async fn on_room_message(
 	let MessageType::Text(ref text_content) = event.content.msgtype else {
 		return;
 	};
-	if !CONFIG.matrix.user_allowed.is_allowed_ignore_err(&event.sender).await {
+	if !CONFIG
+		.matrix
+		.user_allowed
+		.is_allowed_ignore_err(&event.sender)
+		.await
+	{
 		let content = RoomMessageEventContent::text_plain(
 			"Error: You have no permission to use this bot"
 		)
@@ -46,7 +51,7 @@ pub async fn on_room_message(
 		{
 			Ok(value) => value,
 			Err(err) => RoomMessageEventContent::text_plain(format!("{err:?}"))
-			};
+		};
 	let content = content.make_reply_to(
 		&event.into_full_event(room.room_id().into()),
 		ForwardThread::No,
