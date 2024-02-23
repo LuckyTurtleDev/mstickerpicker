@@ -17,12 +17,16 @@ pub async fn on_room_message(
 	if room.state() != RoomState::Joined {
 		return;
 	}
-	let MessageType::Text(ref text_content) = event.content.msgtype else {
-		return;
-	};
 	if event.sender == client.user_id().unwrap() {
 		return;
 	}
+	if event.content.relates_to.is_some() {
+		//ignore edits and replies
+		return;
+	}
+	let MessageType::Text(ref text_content) = event.content.msgtype else {
+		return;
+	};
 	if !CONFIG.matrix.user_allowed.is_allowed(&event.sender) {
 		let content = RoomMessageEventContent::text_plain(
 			"Error: You have no permission to use this bot"

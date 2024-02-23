@@ -14,7 +14,8 @@ pub async fn css() -> Response<String> {
 	let css = include_str!(concat!(
 		env!("CARGO_MANIFEST_DIR"),
 		"/src/components/style.css"
-	));
+	))
+	.to_owned();
 	Response::builder()
 		.header(CONTENT_TYPE, "text/css")
 		.body(css)

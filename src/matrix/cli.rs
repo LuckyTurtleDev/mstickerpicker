@@ -1,6 +1,7 @@
 use crate::CARGO_PKG_NAME;
 use clap::{Command, Parser, Subcommand as _};
 use matrix_sdk::ruma::{events::room::message::RoomMessageEventContent, UserId};
+use once_cell::sync::Lazy;
 
 #[derive(Parser, Debug)]
 enum SubCommands {
@@ -8,14 +9,21 @@ enum SubCommands {
 	Baa
 }
 
+pub fn get_command() -> Command {
+	static COMMAND: Lazy<Command> = Lazy::new(|| {
+		let cli = Command::new(CARGO_PKG_NAME)
+    .bin_name("") //bin name ist still shown afer "Usage:"
+    .no_binary_name(true);
+		SubCommands::augment_subcommands(cli)
+	});
+	COMMAND.to_owned()
+}
+
 pub fn execute_cli(
 	bot_user: &UserId,
 	input: &str
 ) -> anyhow::Result<RoomMessageEventContent> {
-	let cli = Command::new(CARGO_PKG_NAME)
-    .bin_name("") //bin name ist still shown afer "Usage:"
-    .no_binary_name(true);
-	let cli = SubCommands::augment_subcommands(cli);
+	let cli = get_command();
 	// TODO: deal with spaces in arguments
 	// allow message to start with and with out "botname: "
 	let input = input

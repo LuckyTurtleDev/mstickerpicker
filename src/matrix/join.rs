@@ -1,6 +1,14 @@
+use super::cli::get_command;
 use crate::CONFIG;
+use anyhow::Context;
 use log::{error, info, warn};
-use matrix_sdk::{ruma::events::room::member::StrippedRoomMemberEvent, Client, Room};
+use matrix_sdk::{
+	ruma::events::room::{
+		member::StrippedRoomMemberEvent, message::RoomMessageEventContent
+	},
+	Client, Room
+};
+use once_cell::sync::Lazy;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -31,10 +39,22 @@ pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room:
 			delay *= 2;
 
 			if delay > 3600 {
-				error!("Can't join room {} ({err:?})", room.room_id());
+				let err = anyhow::Error::from(err)
+					.context(format!("Can't join room {}", room.room_id()));
+				error!("{err:?}");
 				break;
 			}
 		}
 		info!("Successfully joined room {}", room.room_id());
+		static JOIN_MESSAGE: Lazy<RoomMessageEventContent> = Lazy::new(|| {
+			RoomMessageEventContent::text_plain(get_command().render_help().to_string())
+		});
+		if let Err(err) = room
+			.send((*JOIN_MESSAGE).to_owned())
+			.await
+			.context("failed to join room")
+		{
+			error!("{err:?}");
+		}
 	});
 }
