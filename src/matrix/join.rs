@@ -1,5 +1,4 @@
-use super::cli::get_command;
-use crate::CONFIG;
+use crate::{matrix::cli::HELP, CONFIG};
 use anyhow::Context;
 use log::{error, info, warn};
 use matrix_sdk::{
@@ -51,9 +50,8 @@ pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room:
 			}
 		}
 		info!("Successfully joined room {}", room.room_id());
-		static JOIN_MESSAGE: Lazy<RoomMessageEventContent> = Lazy::new(|| {
-			RoomMessageEventContent::text_plain(get_command().render_help().to_string())
-		});
+		static JOIN_MESSAGE: Lazy<RoomMessageEventContent> =
+			Lazy::new(|| RoomMessageEventContent::text_plain(&*HELP));
 		if let Err(err) = room
 			.send((*JOIN_MESSAGE).to_owned())
 			.await

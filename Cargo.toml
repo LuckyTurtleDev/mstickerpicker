@@ -18,5 +18,6 @@ once_cell = { version = "1.19.0", features = ["parking_lot"] }
 serde = { version = "1.0.193", features = ["derive"] }
 sqlx = { version = "0.7.3", default-features = false, features = ["runtime-tokio", "tls-rustls", "sqlx-postgres", "sqlx-macros", "migrate", "postgres", "macros"] }
 strum_macros = "0.25.3"
+thiserror = "1.0.57"
 tokio = { version = "1.34.0", features = ["fs", "parking_lot", "macros", "rt-multi-thread"] }
 yew = { version = "0.21.0", features = ["ssr"] }
