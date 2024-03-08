@@ -13,6 +13,7 @@ html_color = "0.0.0"
 http = "1.0.0"
 log = "0.4.20"
 matrix-sdk = { version = "0.7.1", default-features = false, features = ["native-tls", "e2e-encryption"] }
+mstickerlib = { git = "https://github.com/LuckyTurtleDev/mstickereditor.git", version = "0.1.1" }
 my-env-logger-style = "0.1.1"
 once_cell = { version = "1.19.0", features = ["parking_lot"] }
 serde = { version = "1.0.193", features = ["derive"] }

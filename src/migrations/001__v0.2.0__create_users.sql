@@ -2,4 +2,4 @@ CREATE TABLE users (
   id SERIAL UNIQUE,
   mxid TEXT UNIQUE NOT NULL,
   PRIMARY KEY (mxid)
-)
+);

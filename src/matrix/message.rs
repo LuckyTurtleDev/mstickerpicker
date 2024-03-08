@@ -72,7 +72,12 @@ pub async fn on_room_message(
 		}
 	}
 
-	let content =
-		execute_cli(client.user_id().unwrap(), &text_content.body, &event.sender).await;
+	let content = execute_cli(
+		client.user_id().unwrap(),
+		&text_content.body,
+		&event.sender,
+		&client
+	)
+	.await;
 	make_reply_and_send(content, event, &room).await;
 }

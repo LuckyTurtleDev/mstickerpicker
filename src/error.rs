@@ -1,3 +1,4 @@
+use http::uri::InvalidUri;
 use log::error;
 use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
 use std::{fmt::Debug, process::exit};
@@ -6,13 +7,24 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum Error {
 	#[error("Database error: `{0}`")]
-	Database(#[from] sqlx::Error)
+	Database(#[from] sqlx::Error),
+	#[error(transparent)]
+	MStickerLib(#[from] mstickerlib::error::Error)
 }
 
 impl Error {
 	fn show_user(&self) -> bool {
 		match self {
-			Self::Database(_) => false
+			Self::Database(_) => false,
+			Self::MStickerLib(mstickerlib::error::Error::InvalidPackUrl(_)) => true,
+			Self::MStickerLib(mstickerlib::error::Error::InvalidHomeServerUrl(_)) => true,
+			Self::MStickerLib(mstickerlib::error::Error::GifDecoding(_)) => true,
+			Self::MStickerLib(mstickerlib::error::Error::GifEncoding(_)) => true,
+			Self::MStickerLib(mstickerlib::error::Error::Ffmpeg(_)) => true,
+			Self::MStickerLib(mstickerlib::error::Error::Webp(_)) => true,
+			Self::MStickerLib(mstickerlib::error::Error::AnimationLoadError) => true,
+			Self::MStickerLib(mstickerlib::error::Error::NoMimeType(_)) => true,
+			Self::MStickerLib(_) => false
 		}
 	}
 }

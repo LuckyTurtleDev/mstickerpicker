@@ -19,13 +19,18 @@ pub static HELP: Lazy<String> = Lazy::new(|| {
 
 /// store the matrix context of the message
 struct Context<'a> {
-	user: &'a UserId
+	/// the user who has send the message to the bot
+	user: &'a UserId,
+	/// the user of the bot
+	bot_user: &'a UserId,
+	client: &'a matrix_sdk::Client
 }
 
 pub async fn execute_cli(
 	bot_user: &UserId,
 	input: &str,
-	user: &UserId
+	user: &UserId,
+	client: &matrix_sdk::Client
 ) -> RoomMessageEventContent {
 	// TODO: deal with spaces in arguments
 	// allow message to start with and with out "botname: "
@@ -45,7 +50,11 @@ pub async fn execute_cli(
 			);
 		}
 	};
-	let context = Context { user };
+	let context = Context {
+		user,
+		bot_user,
+		client
+	};
 	let res = match command {
 		SubCommands::Import(opt) => import::run(opt, context).await
 	};

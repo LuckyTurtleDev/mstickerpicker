@@ -10,6 +10,7 @@ use dotenv::dotenv;
 use error::*;
 use log::info;
 use matrix::{start_matrix, MatrixConfig};
+use mstickerlib::tg;
 use once_cell::sync::Lazy;
 use routes::get_router;
 use serde::{de, Deserialize};
@@ -20,7 +21,10 @@ const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 static CONFIG: Lazy<Config> = Lazy::new(|| {
 	let matrix = MatrixConfig::from_env();
-	Config { matrix }
+	let telegram = tg::Config {
+		bot_key: load_env("TELEGRAM_BOT_KEY")
+	};
+	Config { matrix, telegram }
 });
 
 static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
@@ -40,7 +44,8 @@ static SQL_POOL: Lazy<sqlx::Pool<sqlx::Postgres>> = Lazy::new(|| {
 
 ///read only config
 struct Config {
-	matrix: MatrixConfig
+	matrix: MatrixConfig,
+	telegram: tg::Config
 }
 
 fn load_env(var: &str) -> String {
