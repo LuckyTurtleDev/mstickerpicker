@@ -1,5 +1,5 @@
 use super::Context;
-use crate::{Error, CONFIG};
+use crate::{sql, Error, CONFIG};
 use clap::Parser;
 use matrix_sdk::ruma::{events::room::message::RoomMessageEventContent, UserId};
 use mstickerlib::{database::Database, image::AnimationFormat, tg, tg::pack_url_to_name};
@@ -12,14 +12,14 @@ pub struct Opt {
 }
 
 /// avoid uploading the same file multiple times to matrix
-struct DuplicateChecker<'a>(&'a UserId);
-impl Database for DuplicateChecker<'_> {
+struct DuplicateChecker(i32);
+impl Database for DuplicateChecker {
 	async fn add(
 		&self,
 		hash: mstickerlib::database::Hash,
 		url: String
 	) -> anyhow::Result<()> {
-		todo!();
+		sql::add_mcx(&hash, &url, self.0).await?;
 		Ok(())
 	}
 
@@ -27,8 +27,7 @@ impl Database for DuplicateChecker<'_> {
 		&self,
 		hash: &mstickerlib::database::Hash
 	) -> anyhow::Result<Option<String>> {
-		todo!();
-		Ok(None)
+		Ok(sql::get_mxc_file_by_hash_and_add_user_to_owner(hash, self.0).await?)
 	}
 }
 
@@ -54,7 +53,7 @@ async fn import_pack(pack: &str, context: &Context<'_>) -> Result<(), Error> {
 		user: context.bot_user.to_string(),
 		access_token: context.client.access_token().unwrap()
 	};
-	let duplicate_checker = DuplicateChecker(context.user);
+	let duplicate_checker = DuplicateChecker(0);
 	let mut import_config = tg::ImportConfig::default();
 	import_config.database = Some(&duplicate_checker);
 	import_config.animation_format = AnimationFormat::Webp;

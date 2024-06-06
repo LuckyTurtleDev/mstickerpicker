@@ -52,7 +52,7 @@ pub async fn on_room_message(
 		.user_allowed
 		.is_allowed(&event.sender)
 		.await
-		.map_err(|err| Error::from(err));
+		.map_err(Error::from);
 	match allowed {
 		Ok(true) => {},
 		Ok(false) => {
