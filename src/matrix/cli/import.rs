@@ -53,7 +53,8 @@ async fn import_pack(pack: &str, context: &Context<'_>) -> Result<(), Error> {
 		user: context.bot_user.to_string(),
 		access_token: context.client.access_token().unwrap()
 	};
-	let duplicate_checker = DuplicateChecker(0);
+	let user_id = sql::get_or_creat_user_id(context.user).await?;
+	let duplicate_checker = DuplicateChecker(user_id);
 	let mut import_config = tg::ImportConfig::default();
 	import_config.database = Some(&duplicate_checker);
 	import_config.animation_format = AnimationFormat::Webp;
