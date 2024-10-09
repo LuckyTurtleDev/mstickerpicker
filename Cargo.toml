@@ -1,0 +1,22 @@
+[package]
+name = "mstickerpicker"
+version = "0.2.0"
+authors = ["luckyturtledev <git@lukas1818.de>"]
+edition = "2021"
+publish = false
+
+reslover = 2
+
+
+[dependencies]
+axum = { version = "0.7.7", optional = true }
+dioxus = { version = "0.5", features = ["fullstack", "router"] }
+dioxus-logger = "0.5.1"
+serde = { version = "1.0.210", features = ["derive"] }
+tokio = { version = "1.40.0", optional = true }
+
+
+[features]
+default = []
+server = ["axum", "dioxus/axum", "tokio"]
+web = ["dioxus/web"]

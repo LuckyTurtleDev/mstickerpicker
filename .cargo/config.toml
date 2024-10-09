@@ -1,0 +1,3 @@
+[build]
+# hot reload is broken with custom target dir. So set it back to default.
+target-dir = "target"
