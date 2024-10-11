@@ -10,7 +10,7 @@ use matrix_sdk::{
 use once_cell::sync::OnceCell;
 use std::{collections::HashSet, str::FromStr};
 
-//const  USER_ALLOWED: OnceCell<UserAllowed> = OnceCell::new();
+static  USER_ALLOWED: OnceCell<UserAllowed> = OnceCell::new();
 
 #[derive(Debug, Envconfig)]
 pub struct MatrixConfig {
@@ -72,7 +72,7 @@ impl FromStr for UserAllowed {
 pub async fn start_matrix() -> anyhow::Result<()> {
 	let matrix_config = MatrixConfig::init_from_env()?;
 	info!("{matrix_config:?}");
-    //USER_ALLOWED.set(matrix_config.user_allowed).unwrap();
+    USER_ALLOWED.set(matrix_config.user_allowed).unwrap();
 
 	// Note that when encryption is enabled, you should use a persistent store to be
 	// able to restore the session with a working encryption setup.

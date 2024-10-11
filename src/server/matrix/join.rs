@@ -11,22 +11,21 @@ use once_cell::sync::Lazy;
 use std::time::Duration;
 use tokio::time::sleep;
 
-//use super::USER_ALLOWED;
+use super::USER_ALLOWED;
 
 /// auto join
 pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room: Room) {
+	// no idea what this do. Jusct copy paste it from the auto join example
 	if room_member.state_key != client.user_id().unwrap() {
 		return;
 	}
 
-	//if !CONFIG
-	//	.matrix
-	//	.user_allowed
-	//	.is_allowed_ignore_err(&room_member.sender)
-	//	.await
-	//{
-	//	return;
-	//}
+	// TODO: check also if the user exist already at the database.
+	// So only new users are affected.
+	if !USER_ALLOWED.get().unwrap().allowed(&room_member.sender)
+	{
+		return;
+	}
 
 	tokio::spawn(async move {
 		info!("Autojoining room {}", room.room_id());
@@ -48,7 +47,7 @@ pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room:
 				let err = anyhow::Error::from(err)
 					.context(format!("Can't join room {}", room.room_id()));
 				error!("{err:?}");
-				break;
+				return;
 			}
 		}
 		info!("Successfully joined room {}", room.room_id());
