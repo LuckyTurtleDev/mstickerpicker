@@ -1,0 +1,1 @@
+//! Hack, due cargo bug. see ../../Cargo.toml
