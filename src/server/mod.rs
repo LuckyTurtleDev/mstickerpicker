@@ -10,7 +10,7 @@ use tokio::try_join;
 
 pub fn main_server() {
 	dotenv().ok();
-	
+
 	if let Err(error) = main_tokio() {
 		eprintln!("Error:\n{error:?}");
 		exit(1);
