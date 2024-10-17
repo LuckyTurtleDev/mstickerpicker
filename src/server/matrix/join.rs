@@ -11,7 +11,7 @@ use once_cell::sync::Lazy;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use super::USER_ALLOWED;
+use super::{cli, USER_ALLOWED};
 
 /// auto join
 pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room: Room) {
@@ -22,8 +22,7 @@ pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room:
 
 	// TODO: check also if the user exist already at the database.
 	// So only new users are affected.
-	if !USER_ALLOWED.get().unwrap().allowed(&room_member.sender)
-	{
+	if !USER_ALLOWED.get().unwrap().allowed(&room_member.sender) {
 		return;
 	}
 
@@ -54,7 +53,7 @@ pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room:
 
 		// welcome message
 		static JOIN_MESSAGE: Lazy<RoomMessageEventContent> =
-			Lazy::new(|| RoomMessageEventContent::text_plain("todo"));
+			Lazy::new(|| RoomMessageEventContent::text_plain(&*cli::HELP));
 		if let Err(err) = room
 			.send((*JOIN_MESSAGE).to_owned())
 			.await
@@ -63,5 +62,4 @@ pub async fn on_join(room_member: StrippedRoomMemberEvent, client: Client, room:
 			error!("{err:?}");
 		}
 	});
-
 }

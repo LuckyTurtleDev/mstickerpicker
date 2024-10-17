@@ -1,16 +1,21 @@
+mod cli;
 mod join;
+mod message;
 
 use anyhow::Context;
 use envconfig::Envconfig;
 use join::on_join;
 use log::info;
 use matrix_sdk::{
-	config::SyncSettings, ruma::{OwnedUserId, UserId}, Client, OwnedServerName, ServerName
+	config::SyncSettings,
+	ruma::{OwnedUserId, UserId},
+	Client, OwnedServerName, ServerName
 };
+use message::on_room_message;
 use once_cell::sync::OnceCell;
 use std::{collections::HashSet, str::FromStr};
 
-static  USER_ALLOWED: OnceCell<UserAllowed> = OnceCell::new();
+static USER_ALLOWED: OnceCell<UserAllowed> = OnceCell::new();
 
 #[derive(Debug, Envconfig)]
 pub struct MatrixConfig {
@@ -72,7 +77,7 @@ impl FromStr for UserAllowed {
 pub async fn start_matrix() -> anyhow::Result<()> {
 	let matrix_config = MatrixConfig::init_from_env()?;
 	info!("{matrix_config:?}");
-    USER_ALLOWED.set(matrix_config.user_allowed).unwrap();
+	USER_ALLOWED.set(matrix_config.user_allowed).unwrap();
 
 	// Note that when encryption is enabled, you should use a persistent store to be
 	// able to restore the session with a working encryption setup.
@@ -87,17 +92,20 @@ pub async fn start_matrix() -> anyhow::Result<()> {
 		.initial_device_display_name("command bot")
 		.await?;
 
-	info!("logged in at matrix server {} as {}", &matrix_config.homeserver_url, &matrix_config.username);
+	info!(
+		"logged in at matrix server {} as {}",
+		&matrix_config.homeserver_url, &matrix_config.username
+	);
 
 	// An initial sync to set up state and so our bot doesn't respond to old
 	// messages. But we want to still process invites.
 	client.add_event_handler(on_join);
 
-    let response = client.sync_once(SyncSettings::default()).await?;
+	let response = client.sync_once(SyncSettings::default()).await?;
 
-    // add our CommandBot to be notified of incoming messages, we do this after the
+	// add our CommandBot to be notified of incoming messages, we do this after the
 	// initial sync to avoid responding to messages before the bot was running.
-	//client.add_event_handler(on_room_message);
+	client.add_event_handler(on_room_message);
 
 	// since we called `sync_once` before we entered our sync loop we must pass
 	// that sync token to `sync`
