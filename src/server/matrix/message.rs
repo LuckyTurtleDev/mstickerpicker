@@ -8,6 +8,7 @@ use matrix_sdk::{
 };
 
 use super::USER_ALLOWED;
+use crate::server::{error::MyContext, sql};
 
 async fn make_reply_and_send(
 	content: RoomMessageEventContent,
@@ -46,21 +47,44 @@ pub async fn on_room_message(
 	let MessageType::Text(ref text_content) = event.content.msgtype else {
 		return;
 	};
+
+	let mut outer_user_id = None;
 	if !USER_ALLOWED.get().unwrap().allowed(&event.sender) {
-		// TODO: check also it the user already exist at the database
-		make_reply_and_send(
-			RoomMessageEventContent::text_plain(
-				"Error: You have no permission to use this bot"
-			),
-			event,
-			&room
-		)
-		.await;
-		return;
+		//check also it the user already exist at the database / is register already
+		let user_id = match sql::try_get_user_id(&event.sender)
+			.await
+			.my_context("failed to look up user at the database")
+		{
+			Ok(value) => value,
+			Err(err) => {
+				err.log();
+				make_reply_and_send(err.matrix_event(), event, &room).await;
+				return;
+			}
+		};
+		match user_id {
+			None => {
+				make_reply_and_send(
+					RoomMessageEventContent::text_plain(
+						"Error: You have no permission to use this bot"
+					),
+					event,
+					&room
+				)
+				.await;
+				return;
+			},
+			Some(user_id) => outer_user_id = Some(user_id)
+		}
 	}
 
 	// execute the cli
-	let message =
-		super::cli::execute_cli(client.user_id().unwrap(), &text_content.body).await;
+	let message = super::cli::execute_cli(
+		client.user_id().unwrap(),
+		&event.sender,
+		outer_user_id,
+		&text_content.body
+	)
+	.await;
 	make_reply_and_send(message, event, &room).await;
 }

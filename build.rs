@@ -1,4 +1,18 @@
-use std::{env, process::Command};
+use std::{env, path::PathBuf, process::Command};
+
+fn run_command(cmd: &mut Command) -> String {
+	let display = format!("{cmd:?}");
+	let output = cmd.output().expect(&display);
+	if !output.status.success() {
+		let mut message = String::from_utf8_lossy(&output.stdout);
+		if !message.is_empty() {
+			message += "\n"
+		}
+		message += String::from_utf8_lossy(&output.stderr);
+		panic!("Failed to execute {display}:\n{message}");
+	}
+	String::from_utf8_lossy(&output.stdout).into()
+}
 
 fn main() {
 	//rerun on migrations change
@@ -10,24 +24,29 @@ fn main() {
 		_ => panic!("Error reading environment variable DATABASE_URL")
 	});
 	println!("cargo:rustc-env=DATABASE_URL={database_url}");
-	// run migrations using sqlx
-	let output = Command::new("sqlx")
-		.args([
-			"migrate",
-			"run",
-			"--database-url",
-			&database_url,
-			"--source",
-			"src/migrations/"
-		])
-		.output()
-		.expect("failed to run sqlx");
-	if !output.status.success() {
-		let mut message = String::from_utf8_lossy(&output.stdout);
-		if !message.is_empty() {
-			message += "\n"
+
+	// clean database if it already exist
+	let clean_up = false;
+	if clean_up {
+		let database_name = PathBuf::from(&database_url);
+		let database_name = database_name.file_name().unwrap();
+		let database_name = database_name.to_str().unwrap();
+		for line in run_command(Command::new("psql").arg("-lqtA")).lines() {
+			if line.starts_with(&format!("{database_name}|")) {
+				run_command(Command::new("dropdb").arg(database_name));
+				break;
+			}
 		}
-		message += String::from_utf8_lossy(&output.stderr);
-		panic!("Failed to execute sqlx:\n{message}");
+		run_command(Command::new("createdb").arg(database_name));
 	}
+
+	// run migrations using sqlx
+	run_command(Command::new("sqlx").args([
+		"migrate",
+		"run",
+		"--database-url",
+		&database_url,
+		"--source",
+		"src/migrations/"
+	]));
 }

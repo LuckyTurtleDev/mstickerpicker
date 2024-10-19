@@ -3070,8 +3070,10 @@ dependencies = [
  "matrix-sdk",
  "my-env-logger-style",
  "once_cell",
+ "rand",
  "serde",
  "sqlx",
+ "thiserror",
  "tokio",
 ]
 

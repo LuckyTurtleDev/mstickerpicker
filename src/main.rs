@@ -1,5 +1,3 @@
-#![allow(non_snake_case)]
-
 mod app;
 #[cfg(feature = "server")]
 mod server;

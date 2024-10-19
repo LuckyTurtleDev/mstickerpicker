@@ -1,4 +1,8 @@
+mod activities;
+
 use dioxus::prelude::*;
+use activities::Route;
+
 
 #[cfg(feature = "web")]
 pub fn main_app() {
@@ -11,24 +15,9 @@ pub fn main_app() {
 	dioxus::web::launch::launch_cfg(App, dioxus::web::Config::new().hydrate(true));
 }
 
-#[derive(Clone, Routable, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
-enum Route {
-	#[route("/")]
-	Home {}
-}
-
+#[allow(non_snake_case)]
 pub fn App() -> Element {
 	rsx! {
 		Router::<Route> {}
-	}
-}
-
-#[component]
-fn Home() -> Element {
-	rsx! {
-		div {
-			//color: "green",
-			"Hello world"
-		}
 	}
 }
