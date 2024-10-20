@@ -1,0 +1,11 @@
+[package]
+name = "libsqlite3-sys"
+version = "0.30.1"
+
+
+[features]
+default = []
+bundled = []
+pkg-config = []
+unlock_notify = []
+vcpkg = []

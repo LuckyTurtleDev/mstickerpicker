@@ -1,0 +1,14 @@
+CREATE TABLE users (
+  id SERIAL UNIQUE,
+  mxid TEXT UNIQUE NOT NULL,
+  PRIMARY KEY (mxid)
+);
+
+CREATE TABLE token (
+  token TEXT UNIQUE NOT NULL,
+  user_id INTEGER NOT NULL,
+  PRIMARY KEY (token),
+  FOREIGN KEY(user_id)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+);

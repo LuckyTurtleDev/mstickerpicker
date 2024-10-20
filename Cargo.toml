@@ -9,14 +9,37 @@ reslover = 2
 
 
 [dependencies]
+anyhow = "1.0.89"
 axum = { version = "0.7.7", optional = true }
+clap = { version = "4.5.20", features = ["derive"], optional = true }
 dioxus = { version = "0.5", features = ["fullstack", "router"] }
-dioxus-logger = "0.5.1"
+dioxus-logger = { version = "0.5.1", optional = true }
+dotenv = { version = "0.15.0", optional = true }
+envconfig = { version = "0.11.0", optional = true }
+log = { version = "0.4.22", optional = true }
+matrix-sdk = { version = "0.7.1", default-features = false, features = ["native-tls", "e2e-encryption"], optional = true }
+my-env-logger-style = { version = "0.2.0", optional = true }
+once_cell = { version = "1.20.2", optional = true }
+rand = { version = "0.8.5", optional = true }
 serde = { version = "1.0.210", features = ["derive"] }
+sqlx = { version = "0.8.2", optional = true, default-features = false, features = ["runtime-tokio", "migrate", "postgres", "macros"] }
+thiserror = "1.0.64"
 tokio = { version = "1.40.0", optional = true }
 
 
 [features]
 default = []
-server = ["axum", "dioxus/axum", "tokio"]
-web = ["dioxus/web"]
+#feature flag enable by `dx` if backend is build
+server = ["axum", "clap", "dioxus/axum", "dotenv", "envconfig", "matrix-sdk", "log", "once_cell", "rand", "my-env-logger-style", "sqlx", "tokio"]
+#feature flag enable by `dx` if frontend is build
+web = ["dioxus/web", "dioxus-logger"]
+
+
+
+# Due a bug in cargo, cargo tries still to resolve deactivated weak dependencies.
+# So cargo fails to select a libsqlite3-sys version, because matrix and sqlx both depend on a different version,
+# which depend on a different version of the c-lib (we can only link one version of the same c-lib).
+# see https://github.com/launchbadge/sqlx/issues/3556#event-14604540198
+# Hack: patch the unused libsqlite3-sys version, so its do not depend on the c lib anymore.
+[patch.crates-io]
+libsqlite3-sys = { path = "./dummy-libsqlite3-sys" }
