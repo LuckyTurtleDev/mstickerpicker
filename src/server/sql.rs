@@ -69,3 +69,9 @@ pub async fn add_new_token(user_id: i32) -> Result<String, sqlx::Error> {
 	.await?;
 	Ok(token)
 }
+
+
+/// check if a token is valid
+pub async fn check_token(token: &str) -> Result<bool, sqlx::Error> {
+	query!("SELECT user_id FROM token WHERE token=($1)", token).fetch_optional(pool()).await.map(|f| f.is_some())
+}

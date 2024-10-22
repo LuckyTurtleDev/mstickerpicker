@@ -1,6 +1,6 @@
-mod error;
+pub mod error;
 mod matrix;
-mod sql;
+pub mod sql;
 
 use anyhow::Context;
 use dioxus::prelude::*;

@@ -4,8 +4,6 @@ use dioxus::prelude::*;
 #[component]
 pub fn Home() -> Element {
 	rsx! {
-		div {
-			"Hello please contact the bot, to login"
-		}
+		div { "Hello please contact the bot, to login" }
 	}
 }

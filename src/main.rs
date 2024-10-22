@@ -1,6 +1,7 @@
 mod app;
 #[cfg(feature = "server")]
 mod server;
+mod server_fn;
 
 fn main() {
 	#[cfg(feature = "web")]

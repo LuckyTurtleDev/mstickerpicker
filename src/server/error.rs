@@ -1,3 +1,4 @@
+use dioxus::prelude::{server_fn::{error::ServerFnErrorErr, ServerFn}, ServerFnError};
 use log::error;
 use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
 use std::fmt::Display;
@@ -63,7 +64,7 @@ impl MyError {
 	}
 
 	/// create a message, which can be savely shown to the enduser
-	fn user_message(&self) -> String {
+	pub fn user_message(&self) -> String {
 		if self.show_user() {
 			format!("{self}")
 		} else {
@@ -118,4 +119,14 @@ where
 			err
 		})
 	}
+}
+
+
+
+
+impl From<MyError> for ServerFnError
+	{
+	fn from(value: MyError) -> Self {
+		Self::ServerError(value.user_message())
+	}	
 }

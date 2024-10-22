@@ -30,7 +30,7 @@ tokio = { version = "1.40.0", optional = true }
 [features]
 default = []
 #feature flag enable by `dx` if backend is build
-server = ["axum", "clap", "dioxus/axum", "dotenv", "envconfig", "matrix-sdk", "log", "once_cell", "rand", "my-env-logger-style", "sqlx", "tokio"]
+server = ["axum", "clap", "dioxus/axum", "dioxus-logger", "dotenv", "envconfig", "matrix-sdk", "log", "once_cell", "rand", "my-env-logger-style", "sqlx", "tokio"]
 #feature flag enable by `dx` if frontend is build
 web = ["dioxus/web", "dioxus-logger"]
 
